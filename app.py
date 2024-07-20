@@ -71,14 +71,11 @@ async def deleteNote(ctx, *, i):
         data = Cursor.execute(queryfetch, (ctx.author.id, ctx.guild.id)).fetchall()
         toDelete = [int(x) for x in i.split(", ") if x.isdigit()]
 
-        print(f"{toDelete}")
-
         if len(toDelete) != 0:
 
             for h, msg in enumerate(data):
             
                 if h in toDelete:
-                    print(f"{msg[0]}")
                     query = "DELETE FROM communityNotepad WHERE message = ? AND author_ID = ? AND server_ID = ?"
                     Cursor.execute(query, (*msg, ctx.author.id, ctx.guild.id))
 
@@ -93,9 +90,9 @@ async def deleteNote(ctx, *, i):
 
 @bot.command(name = "test")
 async def test(ctx):
-    emojis = await getEmojis()
-    for x in emojis:
-        print(f"{x}")
+    #emojis = await getEmojis()
+    #for x in emojis:
+    #    print(f"{x}")
     await ctx.author.send(f"<:trol:968658017086242897>")
 
 # Comando de ser xingado ai que triste
@@ -124,7 +121,6 @@ async def channelStore(ctx):
     server_id = ctx.guild.id
     query1 = "SELECT channel FROM storedLocations WHERE server = ?"
     currentChannelStored = Cursor.execute(query1, (server_id,)).fetchone()
-    print(f"{currentChannelStored}")
     channel_id = ctx.channel.id
     
 
