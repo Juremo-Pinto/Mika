@@ -58,27 +58,34 @@ async def showNotepad(ctx, *, a1):
 
 # Comando de deletar nota
 @bot.command(name = "deleteNotePad", aliases = ["deleta", "apague", "acabe-lhe", "descombule-se", "evaporize-se", "mate", "mata"])
-async def deleteNote(ctx, i):
-    if str(i).isdigit():
-        queryfetch = "SELECT message FROM communityNotepad WHERE author_ID = ? and server_ID = ?"
-        data = Cursor.execute(queryfetch, (ctx.author.id, ctx.guild.id)).fetchall()
+async def deleteNote(ctx, *, i):
 
-        for x, msg in enumerate(data):
-            if x == int(i):
-                query = "DELETE FROM communityNotepad WHERE message = ? AND author_ID = ? AND server_ID = ?"
-                Cursor.execute(query, (*msg, ctx.author.id, ctx.guild.id))
-                GeneralData.commit()
-                await ctx.reply("Nota morta com sucesso")
-                break
-                
-    elif i == "TUDO":
+    if i == "TUDO":
         query = "DELETE FROM communityNotepad WHERE author_ID = ? AND server_ID = ?"
         Cursor.execute(query, (ctx.author.id, ctx.guild.id))
         GeneralData.commit()
         await ctx.reply("Tá tudo morto agora")
-
+    
     else:
-        await ctx.send("O burro tu tem q especificar um numero (baseado na sua lista de notas)")
+        queryfetch = "SELECT message FROM communityNotepad WHERE author_ID = ? and server_ID = ?"
+        data = Cursor.execute(queryfetch, (ctx.author.id, ctx.guild.id)).fetchall()
+        toDelete = [int(x) for x in i.split(", ") if x.isdigit()]
+
+        print(f"{toDelete}")
+
+        if len(toDelete) != 0:
+
+            for h, msg in enumerate(data):
+            
+                if h in toDelete:
+                    print(f"{msg[0]}")
+                    query = "DELETE FROM communityNotepad WHERE message = ? AND author_ID = ? AND server_ID = ?"
+                    Cursor.execute(query, (*msg, ctx.author.id, ctx.guild.id))
+
+            GeneralData.commit()
+            await ctx.reply("Notas mortas com sucesso")
+        else:
+            await ctx.send("O burro tu tem q especificar os numero (baseado na sua lista de notas)")
 
 
 
