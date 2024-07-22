@@ -187,6 +187,9 @@ async def requestHandler(ctx, *, url):
         else:
             await ctx.reply(f"botado na playlist")
 
+    else:
+        await ctx.send("Tenta entra na call primeiro")
+
 async def playSong(ctx, VC):
     del(musicQueue[0])
     if len(musicQueue) > 0:
