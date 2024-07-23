@@ -17,8 +17,8 @@ GeneralData.execute("CREATE TABLE IF NOT EXISTS storedLocations(channel INT, ser
 GeneralData.execute("CREATE TABLE IF NOT EXISTS communityNotepad(message STR, author_ID INT, server_ID INT)")
 
 ytdl_format_options = {
-    'format': 'best',
-    'estrictfilenames': True,
+    'format': 'bestaudio/best',
+    'restrictfilenames': True,
     'noplaylist': True,
     'nocheckcertificate': True,
     'ignoreerrors': False,
@@ -26,7 +26,8 @@ ytdl_format_options = {
     'quiet': True,
     'no_warnings': True,
     'default_search': 'auto',
-    'source_address': '0.0.0.0'
+    'source_address': '0.0.0.0',
+    'fragment_retries': 5
 }
 
 ffmpeg_format_options = {
@@ -190,8 +191,12 @@ async def requestHandler(ctx, *, url):
     else:
         await ctx.send("Tenta entra na call primeiro")
 
+    await ctx.message.delete()
+
 async def playSong(ctx, VC):
     del(musicQueue[0])
+    while VC.is_playing():
+        await asyncio.sleep(1)
     if len(musicQueue) > 0:
         try:          
             async with ctx.typing():
@@ -223,6 +228,11 @@ async def playing(ctx, *, msg):
             await ctx.reply(f"**{currentSongTitle}**")
         else:
             await ctx.reply("nada")
+
+@bot.event
+async def on_disconnect():
+    global musicQueue
+    musicQueue = []
 
 # Otras merda
 
