@@ -1,6 +1,4 @@
-﻿# AutismoBOT
-
-Disclaimer:
+﻿# Disclaimer:
 
 We're not responsible for any damage caused by this bot, including but not limited to:
 
