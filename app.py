@@ -59,7 +59,7 @@ class YTDLSource(nextcord.PCMVolumeTransformer):
         loop = loop or asyncio.get_event_loop()
         info = await cls.get_info(url, True, shuffle, loop=loop)
 
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(info['url'] if 'url' in info else info['original_url'], download=False))
+        data = await asyncio.wait_for(loop.run_in_executor(None, lambda: ytdl.extract_info(info['url'] if 'url' in info else info['original_url'], download=False)), timeout=30)
 
         filename = data['url']
         return cls(nextcord.FFmpegPCMAudio(filename, **ffmpeg_format_options), data=data)
@@ -67,7 +67,7 @@ class YTDLSource(nextcord.PCMVolumeTransformer):
     @classmethod
     async def get_info(cls, url, addToQueue = False, shuffle = False, *, loop=None):
         loop = loop or asyncio.get_event_loop()
-        info = await loop.run_in_executor(None, lambda: ytdlInfoExtractor.extract_info(url, download=False))
+        info = await asyncio.wait_for(loop.run_in_executor(None, lambda: ytdlInfoExtractor.extract_info(url, download=False)), timeout=15)
 
         if 'entries' in info and info['entries']:
             if shuffle:
@@ -138,7 +138,7 @@ async def showNotepad(ctx, *, a1):
         
         case "as musica"|"a lista de musicas"|"as musicas":
             if len(musicQueue) > 0 and musicQueue[0]:
-                message = f"- **{currentlyPlaying}\n**"
+                message = f"- **{currentlyPlaying}**\n"
                 for song in musicQueue:
                     songMessage = f"- {song[1]}\n"
                     if len(message) + len(songMessage) > 2000:
@@ -153,7 +153,7 @@ async def showNotepad(ctx, *, a1):
 
 
 # Comando de deletar nota
-@bot.command(name = "deleteNotePad", aliases = ["deleta", "apague", "acabe-lhe", "descombule-se", "evaporize-se", "mate", "mata"])
+@bot.command(name = "deleteNotePad", aliases = ["mata", "MATA"])
 async def deleteNote(ctx, *, i):
 
     if i == "TUDO":
@@ -222,8 +222,10 @@ async def requestHandler(ctx, *, url):
         await ctx.send("ok calma")
 
         isNew = not VCClient.is_playing() and len(musicQueue) == 0 
-
-        info = await YTDLSource.get_info(data[0], False, loop=bot.loop)   
+        try:
+            info = await YTDLSource.get_info(data[0], False, loop=bot.loop)
+        except asyncio.TimeoutError:
+            info = {'title': 'PlaceHolder'}
 
         musicQueue.append([data[0], info['title']])
             
@@ -253,7 +255,7 @@ async def playSong(ctx, VC, shuffle = False):
                     await ctx.author.voice.channel.connect()
 
                 VC.play(player, after=lambda e: bot.loop.create_task(playSong(ctx, VC)))
-        except yt_dlp.utils.DownloadError as e:
+        except (yt_dlp.utils.DownloadError, asyncio.TimeoutError) as e:
                 await ctx.send("deu ruim, proxima música")
                 bot.loop.create_task(playSong(ctx, VC))
     else:
@@ -392,11 +394,46 @@ async def channelForget(ctx, *, msg):
 
 
 
-@bot.command(name = "repeatAfterMe", aliases = ["repita"])
+@bot.command(name = "repita")
 async def sendMessage(ctx, *, message):
     await ctx.send(message)
     await ctx.message.delete()
-        
+
+
+markedMessages = {}
+
+
+# Pra marcar
+@bot.command(name = "toMark", aliases = ["marca"])
+async def toMark(ctx):
+    channelID = ctx.channel.id
+    if channelID not in markedMessages:
+        markedMessages[channelID] = []
+        markedMessages[channelID].append(ctx.message)
+        await ctx.reply("marquei meu")
+
+
+# Pra deletar
+@bot.command(name = "toDelete", aliases = ["deleta"])
+async def toDelete(ctx):
+    channelID = ctx.channel.id
+    finalMsgsToDel = []
+    if channelID in markedMessages:
+        MsgToDel = markedMessages[channelID]
+        for items in MsgToDel:
+            try:
+                await items.channel.fetch_message(items.id)
+                finalMsgsToDel.append(items)
+            except:
+                pass
+        await asyncio.gather(*[msg.delete() for msg in finalMsgsToDel])
+
+
+@bot.event
+async def on_message(message):
+    if message.channel.id in markedMessages:
+        markedMessages[message.channel.id].append(message)
+    await bot.process_commands(message)
 # OTRAS COISA AINDA
 
 @bot.event
