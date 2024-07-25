@@ -224,7 +224,7 @@ async def requestHandler(ctx, *, url):
     if VCClient:
         await ctx.send("ok calma")
 
-        isNew = not VCClient.is_playing() and len(musicQueue) == 0 
+        isNew = not VCClient.is_playing() and len(musicQueue) == 0 and currentlyPlaying is None
         wasAdded = False
 
         try:
@@ -290,7 +290,9 @@ async def playing(ctx, *, msg):
 async def on_voice_state_update(member, before, after):
     if member == bot.user and before.channel and not after.channel:
         global musicQueue
+        global currentlyPlaying
         musicQueue = []
+        currentlyPlaying = None
             
         
 
