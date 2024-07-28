@@ -1,4 +1,4 @@
-﻿# Disclaimer:
+﻿# Disclaimer
 
 We're not responsible for any damage caused by this bot, including but not limited to:
 
@@ -8,4 +8,6 @@ We're not responsible for any damage caused by this bot, including but not limit
 - Spontaneous combustion
 - High doses of radiation poisoning
 - Deep Root Disease
+- Non-Existence
+- Enlightment
 - *Death*
