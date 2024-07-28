@@ -517,7 +517,7 @@ async def getPopulatedVc():
 
 async def theFakeout():
 
-    Vc = getPopulatedVc()
+    Vc = await getPopulatedVc()
 
     if len(Vc):
         Call = random.choice(Vc)
@@ -530,7 +530,7 @@ async def theFakeout():
 
 async def performAMinusculeAmountOfDespicableActions():
     
-    Vc = getPopulatedVc()
+    Vc = await getPopulatedVc()
 
     if len(Vc) > 0:
         selectedCall = random.choice(Vc)
