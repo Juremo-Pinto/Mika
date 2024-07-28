@@ -479,7 +479,11 @@ async def on_ready():
         else:
             print(f"O servidor {currentServer.name} não possue nenhum canal marcado")
 
-    if random.randint(1, 3) == 1:
+    performAMinusculeAmountOfDespicableActions()
+
+
+async def performAMinusculeAmountOfDespicableActions():
+    if random.randint(1, 1) == 1:
         servers = bot.guilds
         zap2 = None
 
@@ -501,14 +505,12 @@ async def on_ready():
 
             await asyncio.sleep(random.uniform(4, 18))
 
-            botVCClient.play(source)
+            async def stop():
+                await asyncio.sleep(random.uniform(0.2, 2))  
+                await botVCClient.disconnect()  
 
-            await asyncio.sleep(random.uniform(0.2, 2))  
-
-            await botVCClient.disconnect()     
-    
-    
-    
+            botVCClient.play(source, after = lambda e: stop())
+           
 
 
 if __name__ == '__main__':
