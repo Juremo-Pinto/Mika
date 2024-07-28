@@ -494,16 +494,25 @@ Audios = [
 
 async def theTrolling_Handler():
     if random.randint(1, 50) <= 8:
+
+        print('time to perform some tomfoolery')
+
         if random.randint(1, 10) <= 3:
             await performAMinusculeAmountOfDespicableActions()
         else:
             await theFakeout()
+
+    else:
+
+        print('nah')
 
 
 
 async def getPopulatedVc():
     servers = bot.guilds
     zap2 = None
+
+    print('getting the populated vcs')
 
     for index in servers:
         if index.name == "Whatsapp 2":
@@ -517,6 +526,8 @@ async def getPopulatedVc():
 
 async def theFakeout():
 
+    print('doing the fakeout')
+
     Vc = await getPopulatedVc()
 
     if len(Vc):
@@ -526,10 +537,19 @@ async def theFakeout():
 
         await asyncio.sleep(random.randint(10, 90))
 
+        print('fakeout endended')
+
+    else:
+
+        print('unable to perform the fakeout')
+
+
 
 
 async def performAMinusculeAmountOfDespicableActions():
     
+    print('doing a little trolling')
+
     Vc = await getPopulatedVc()
 
     if len(Vc) > 0:
@@ -545,8 +565,13 @@ async def performAMinusculeAmountOfDespicableActions():
         async def stop():
             await asyncio.sleep(random.uniform(0.2, 2))  
             await botVCClient.disconnect()  
+            print('enderd the little trolling')
 
         botVCClient.play(source, after = lambda e: stop())
+
+    else:
+
+        print('unable to perform the little trolling')
            
 
 
