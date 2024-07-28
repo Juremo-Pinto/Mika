@@ -474,9 +474,9 @@ async def on_ready():
     if random.randint(1, 3) == 1:
         await performAMinusculeAmountOfDespicableActions()
 
-    await asyncio.sleep(random.randint(60, 150))
+    await asyncio.sleep(random.randint(40, 90))
 
-    scheduler.add_job(theTrolling_Handler, 'interval', minutes = 1)
+    scheduler.add_job(theTrolling_Handler, 'interval', seconds = 45)
     scheduler.start()
 
 
@@ -493,11 +493,11 @@ Audios = [
 
 
 async def theTrolling_Handler():
-    if random.randint(1, 50) <= 5:
+    if random.randint(1, 50) <= 8:
         if random.randint(1, 10) <= 3:
-            performAMinusculeAmountOfDespicableActions()
+            await performAMinusculeAmountOfDespicableActions()
         else:
-            theFakeout()
+            await theFakeout()
 
 
 
