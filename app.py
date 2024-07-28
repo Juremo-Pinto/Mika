@@ -7,10 +7,13 @@ import random
 
 from nextcord import Intents
 from nextcord.ext import commands
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
  
 intents = Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=intents)
+
+scheduler = AsyncIOScheduler()
 
 GeneralData = sqlite3.connect('GeneralBotData.db')
 Cursor = GeneralData.cursor()
@@ -451,17 +454,6 @@ async def on_message(message):
 
 # OTRAS COISA AINDA
 
-Audios = [
-    'A bobina.mp3',
-    'Aii meu piruuu.mp3',
-    'mae tem cafe.mp3',
-    'mae tem cafe buzina edition.mp3',
-    'rapaz ele ta sem zap.mp3',
-    'EU QUERO É SEXOW.mp3'
-]
-
-
-
 @bot.event
 async def on_ready():
     print(f"Logged in as: {bot.user.name}")
@@ -479,37 +471,82 @@ async def on_ready():
         else:
             print(f"O servidor {currentServer.name} não possue nenhum canal marcado")
 
-    performAMinusculeAmountOfDespicableActions()
+    if random.randint(1, 3) == 1:
+        await performAMinusculeAmountOfDespicableActions()
+
+    await asyncio.sleep(random.randint(60, 150))
+
+    scheduler.add_job(theTrolling_Handler, 'interval', minutes = 1)
+    scheduler.start()
+
+
+
+Audios = [
+    'A bobina.mp3',
+    'Aii meu piruuu.mp3',
+    'mae tem cafe.mp3',
+    'mae tem cafe buzina edition.mp3',
+    'rapaz ele ta sem zap.mp3',
+    'EU QUERO É SEXOW.mp3'
+]
+
+
+
+async def theTrolling_Handler():
+    if random.randint(1, 50) <= 5:
+        if random.randint(1, 10) <= 3:
+            performAMinusculeAmountOfDespicableActions()
+        else:
+            theFakeout()
+
+
+
+async def getPopulatedVc():
+    servers = bot.guilds
+    zap2 = None
+
+    for index in servers:
+        if index.name == "Whatsapp 2":
+            zap2 = index
+
+    VCs = zap2.voice_channels
+
+    return [vc for vc in VCs if len(vc.voice_states) > 0]
+
+
+
+async def theFakeout():
+
+    Vc = getPopulatedVc()
+
+    if len(Vc):
+        Call = random.choice(Vc)
+
+        await Call.connect()
+
+        await asyncio.sleep(random.randint(10, 90))
+
 
 
 async def performAMinusculeAmountOfDespicableActions():
-    if random.randint(1, 1) == 1:
-        servers = bot.guilds
-        zap2 = None
+    
+    Vc = getPopulatedVc()
 
-        for index in servers:
-            if index.name == "Whatsapp 2":
-                zap2 = index
+    if len(Vc) > 0:
+        selectedCall = random.choice(Vc)
+        await selectedCall.connect()
 
-        VCs = zap2.voice_channels
+        selectedAudio = random.choice(Audios)
+        source = nextcord.FFmpegPCMAudio(f"Audios/{selectedAudio}")
+        botVCClient = bot.voice_clients[0]
 
-        VcWithPeople = [vc for vc in VCs if len(vc.voice_states) > 0]
+        await asyncio.sleep(random.uniform(4, 18))
 
-        if len(VcWithPeople) > 0:
-            selectedCall = random.choice(VcWithPeople)
-            await selectedCall.connect()
+        async def stop():
+            await asyncio.sleep(random.uniform(0.2, 2))  
+            await botVCClient.disconnect()  
 
-            selectedAudio = random.choice(Audios)
-            source = nextcord.FFmpegPCMAudio(f"Audios/{selectedAudio}")
-            botVCClient = bot.voice_clients[0]
-
-            await asyncio.sleep(random.uniform(4, 18))
-
-            async def stop():
-                await asyncio.sleep(random.uniform(0.2, 2))  
-                await botVCClient.disconnect()  
-
-            botVCClient.play(source, after = lambda e: stop())
+        botVCClient.play(source, after = lambda e: stop())
            
 
 
