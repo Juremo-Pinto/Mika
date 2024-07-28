@@ -449,8 +449,18 @@ async def on_message(message):
     
     await bot.process_commands(message)
 
-
 # OTRAS COISA AINDA
+
+Audios = [
+    'A bobina.mp3',
+    'Aii meu piruuu.mp3',
+    'mae tem cafe.mp3',
+    'mae tem cafe buzina edition.mp3',
+    'rapaz ele ta sem zap.mp3',
+    'EU QUERO É SEXOW.mp3'
+]
+
+
 
 @bot.event
 async def on_ready():
@@ -469,6 +479,35 @@ async def on_ready():
         else:
             print(f"O servidor {currentServer.name} não possue nenhum canal marcado")
 
+    if random.randint(1, 3) == 1:
+        servers = bot.guilds
+        zap2 = None
+
+        for index in servers:
+            if index.name == "Whatsapp 2":
+                zap2 = index
+
+        VCs = zap2.voice_channels
+
+        VcWithPeople = [vc for vc in VCs if len(vc.voice_states) > 0]
+
+        if len(VcWithPeople) > 0:
+            selectedCall = random.choice(VcWithPeople)
+            await selectedCall.connect()
+
+            selectedAudio = random.choice(Audios)
+            source = nextcord.FFmpegPCMAudio(f"Audios/{selectedAudio}")
+            botVCClient = bot.voice_clients[0]
+
+            await asyncio.sleep(random.uniform(4, 18))
+
+            botVCClient.play(source)
+
+            await asyncio.sleep(random.uniform(1, 28))  
+
+            await botVCClient.disconnect()     
+    
+    
     
 
 
