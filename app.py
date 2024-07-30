@@ -486,7 +486,8 @@ Audios = [
     'mae tem cafe.mp3',
     'mae tem cafe buzina edition.mp3',
     'rapaz ele ta sem zap.mp3',
-    'EU QUERO É SEXOW.mp3'
+    'EU QUERO É SEXOW.mp3',
+    'zap.mp3'
 ]
 
 
@@ -495,7 +496,7 @@ async def theTrolling_Handler():
     zap2 = await getServerByName('Whatsapp 2')
 
     if not any(VcClients.guild.id == zap2.id for VcClients in bot.voice_clients):
-        if random.randint(1, 100) == 1:
+        if random.randint(1, 100) == 2:
 
             print('time to perform some tomfoolery')
 
