@@ -475,7 +475,7 @@ async def on_ready():
 
     print('it starts')
 
-    schedulerJobDict['theTrollingJob'] = scheduler.add_job(theTrolling_Handler, 'interval', seconds = 45).id
+    schedulerJobDict['theTrollingJob'] = scheduler.add_job(theTrolling_Handler, 'interval', seconds = 10)
     scheduler.start()
 
 
@@ -495,11 +495,11 @@ async def theTrolling_Handler():
     zap2 = await getServerByName('Whatsapp 2')
 
     if not any(VcClients.guild.id == zap2.id for VcClients in bot.voice_clients):
-        if random.randint(1, 50) <= 6:
+        if random.randint(1, 100) == 1:
 
             print('time to perform some tomfoolery')
 
-            if random.randint(1, 10) <= 4:
+            if random.randint(1, 10) <= 7:
                 await performAMinusculeAmountOfDespicableActions()
             else:
                 await theFakeout()
@@ -545,8 +545,6 @@ async def theFakeout():
     Vc = await getPopulatedVc()
 
     if len(Vc):
-        scheduler.pause_job(schedulerJobDict["theTrollingJob"])
-
         Call = random.choice(Vc)
 
         VcClient = await Call.connect()
@@ -556,8 +554,6 @@ async def theFakeout():
         await VcClient.disconnect()
 
         print('fakeout endended')
-
-        scheduler.resume_job(schedulerJobDict["theTrollingJob"])
 
     else:
 
@@ -573,8 +569,6 @@ async def performAMinusculeAmountOfDespicableActions():
     Vc = await getPopulatedVc()
 
     if len(Vc) > 0:
-        scheduler.pause_job(schedulerJobDict["theTrollingJob"])
-
         selectedCall = random.choice(Vc)
         await selectedCall.connect()
 
@@ -586,8 +580,7 @@ async def performAMinusculeAmountOfDespicableActions():
 
         async def stop():
             await asyncio.sleep(random.uniform(0.2, 2))  
-            await botVCClient.disconnect()  
-            scheduler.resume_job(schedulerJobDict["theTrollingJob"])
+            await botVCClient.disconnect() 
             print('enderd the little trolling')
 
         botVCClient.play(source, after = lambda e: stop())
