@@ -4,13 +4,17 @@ import os
 import yt_dlp
 import asyncio
 import random
+import keyboard
 
 from nextcord import Intents
 from nextcord.ext import commands
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 intents = Intents.default()
+
 intents.message_content = True
+intents.members = True
+
 bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=intents)
 
 scheduler = AsyncIOScheduler()
@@ -466,6 +470,9 @@ async def on_message(message):
 
 # OTRAS COISA AINDA
 
+TheMicrofone = None
+Host = None
+
 @bot.event
 async def on_ready():
     print(f"Logged in as: {bot.user.name}")
@@ -482,6 +489,12 @@ async def on_ready():
             print(f"Mensage mandada em: {currentServer.name}")
         else:
             print(f"O servidor {currentServer.name} não possue nenhum canal marcado")
+
+    global TheMicrofone
+    global Host
+    
+    TheMicrofone = await getMemberByName("themicrofoneof11")
+    Host = await getMemberByName("opinionthief")
 
     print('it starts 2')
 
@@ -505,17 +518,11 @@ async def theTrolling_Handler():
     zap2 = await getServerByName('Whatsapp 2')
 
     if not any(VcClients.guild.id == zap2.id for VcClients in bot.voice_clients):
-        if random.randint(1, 120) == 1:
-
+        if random.randint(1, 110) == 1:
             print('time to perform some tomfoolery')
-
-            if random.randint(1, 10) <= 4:
-                await performAMinusculeAmountOfDespicableActions()
-            else:
-                await theFakeout()
-
+            
+            await performAMinusculeAmountOfDespicableActions()
         else:
-
             print('nah')
     
     else:
@@ -537,6 +544,32 @@ async def getServerByName(serverName):
     return None
 
 
+
+async def getMemberByName(name):
+    servers = bot.guilds
+    
+    for server in servers:
+        memberlist = await server.fetch_members().flatten()
+        
+        for member in memberlist:
+            if member.name == name:
+                return member
+    
+    return None
+
+
+
+async def getMemberById(ID):
+    servers = bot.guilds
+    
+    for server in servers:
+        member = await server.fetch_member(ID)
+        if member:
+            return member
+        
+    return None
+
+
 async def getPopulatedVc():
     zap2 = await getServerByName('Whatsapp 2')
 
@@ -545,31 +578,6 @@ async def getPopulatedVc():
     print('adquiring populated Vcs')
 
     return [vc for vc in VCs if len(vc.voice_states) > 0]
-
-
-
-async def theFakeout():
-
-    print('doing the fakeout')
-
-    Vc = await getPopulatedVc()
-
-    if len(Vc):
-        Call = random.choice(Vc)
-
-        VcClient = await Call.connect()
-
-        await asyncio.sleep(random.randint(10, 40))
-
-        await VcClient.disconnect()
-
-        print('fakeout endended')
-
-    else:
-
-        print('unable to perform the fakeout')
-
-
 
 
 async def performAMinusculeAmountOfDespicableActions():
@@ -586,20 +594,32 @@ async def performAMinusculeAmountOfDespicableActions():
         source = nextcord.FFmpegPCMAudio(f"Audios/{selectedAudio}")
         botVCClient = bot.voice_clients[0]
 
-        await asyncio.sleep(random.randint(4, 33))
+        await asyncio.sleep(random.randint(1, 10))
 
         async def stop():
-            await asyncio.sleep(random.uniform(0.2, 2))  
+            await asyncio.sleep(random.uniform(0, 0.4))  
             await botVCClient.disconnect() 
             print('enderd the little trolling')
 
         botVCClient.play(source, after = lambda e: stop())
 
     else:
-
         print('unable to perform the little trolling')
-           
 
+
+async def on_key_event(e):
+    print(f"TESTESTESTES: {e}")
+    
+    if TheMicrofone.voice and Host.voice:
+        await TheMicrofone.edit(mute= not Host.voice.self_mute)
+    
+    print(f"muted: {TheMicrofone.voice.mute}")
+
+
+def await_the_thing(e):
+    asyncio.run_coroutine_threadsafe(on_key_event(e), bot.loop)
+
+keyboard.on_press_key("decimal", callback = await_the_thing)
 
 if __name__ == '__main__':
     bot.run(os.environ['DISCORD_TOKEN'])
