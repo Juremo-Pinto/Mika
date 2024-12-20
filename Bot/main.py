@@ -1,3 +1,7 @@
+# main.py
+
+# general imports
+
 import nextcord
 import sqlite3
 import os
@@ -6,9 +10,15 @@ import asyncio
 import random
 # import keyboard
 
+# Main package import
 from nextcord import Intents
 from nextcord.ext import commands
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+# other files import
+from bot_utilities import bot_utilities
+
+# bot object creation
 
 intents = Intents.default()
 
@@ -16,6 +26,10 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=intents)
+
+# class instantiation
+
+utilities = bot_utilities(bot)
 
 scheduler = AsyncIOScheduler()
 
@@ -508,8 +522,8 @@ async def initiate_little_trolling():
     global the_microfone_user
     global host_user
     
-    the_microfone_user = await getMemberByName("themicrofoneof11")
-    host_user = await getMemberByName("opinionthief")
+    the_microfone_user = await utilities.fetch_member_by_name("themicrofoneof11")
+    host_user = await utilities.fetch_member_by_name("opinionthief")
 
     print('it starts 2')
 
@@ -518,7 +532,7 @@ async def initiate_little_trolling():
 
 
 async def theTrolling_Handler():
-    zap2 = await getServerByName('Whatsapp 2')
+    zap2 = await utilities.fetch_server_by_name('Whatsapp 2')
 
     if not any(VcClients.guild.id == zap2.id for VcClients in bot.voice_clients):
         if random.randint(1, 100) != 1:
@@ -532,49 +546,11 @@ async def theTrolling_Handler():
         print('unfortunately it is already here')
 
 
-async def getServerByName(serverName):
-    servers = bot.guilds
-    zap2 = None
-
-    print('adquiring the server')
-
-    for index in servers:
-        if index.name == serverName:
-            zap2 = index
-            return zap2
-    
-    return None
-
-
-async def getMemberByName(name):
-    servers = bot.guilds
-    
-    for server in servers:
-        memberlist = await server.fetch_members().flatten()
-        
-        for member in memberlist:
-            if member.name == name:
-                return member
-    
-    return None
-
-
-async def getMemberById(ID):
-    servers = bot.guilds
-    
-    for server in servers:
-        member = await server.fetch_member(ID)
-        if member:
-            return member
-        
-    return None
-
-
 async def getPopulatedVc():
     voice_channels = []
     
     for server in servers_with_tomfoolery_present:
-        adquired_server = await getServerByName(server)
+        adquired_server = await utilities.fetch_server_by_name(server)
         voice_channels += adquired_server.voice_channels
 
     print('adquiring populated Vcs')
