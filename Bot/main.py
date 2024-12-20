@@ -498,6 +498,11 @@ async def on_ready():
 # The little Tronlling
 
 playable_audio_list = os.listdir('./Audios')
+servers_with_tomfoolery_present = [
+    "Whatsapp 2",
+    "Teste de BOT",
+    "VILA DO CHAVES"
+]
 
 async def initiate_little_trolling():
     global the_microfone_user
@@ -516,7 +521,7 @@ async def theTrolling_Handler():
     zap2 = await getServerByName('Whatsapp 2')
 
     if not any(VcClients.guild.id == zap2.id for VcClients in bot.voice_clients):
-        if random.randint(1, 100) == 1:
+        if random.randint(1, 100) != 1:
             print('time to perform some tomfoolery')
             
             await performAMinusculeAmountOfDespicableActions()
@@ -566,13 +571,15 @@ async def getMemberById(ID):
 
 
 async def getPopulatedVc():
-    zap2 = await getServerByName('Whatsapp 2')
-
-    VCs = zap2.voice_channels
+    voice_channels = []
+    
+    for server in servers_with_tomfoolery_present:
+        adquired_server = await getServerByName(server)
+        voice_channels += adquired_server.voice_channels
 
     print('adquiring populated Vcs')
 
-    return [vc for vc in VCs if len(vc.voice_states) > 0]
+    return [voice_channel for voice_channel in voice_channels if len(voice_channel.voice_states) > 0]
 
 
 async def performAMinusculeAmountOfDespicableActions():
@@ -594,7 +601,9 @@ async def performAMinusculeAmountOfDespicableActions():
 
     await asyncio.sleep(random.randint(1, 10))
 
-    async def stop():
+    async def stop(err):
+        if err:
+            print(err)
         await asyncio.sleep(random.uniform(0, 0.4))  
         await vc_bot_client.disconnect() 
         print('enderd the little trolling')
