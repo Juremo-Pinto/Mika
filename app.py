@@ -470,44 +470,53 @@ async def on_message(message):
 
 # OTRAS COISA AINDA
 
-TheMicrofone = None
-Host = None
+the_microfone_user = None
+host_user = None
 
 @bot.event
 async def on_ready():
     print(f"Logged in as: {bot.user.name}")
 
-    query = "SELECT channel, server FROM storedLocations WHERE general_ID = 0"
-    data = Cursor.execute(query).fetchall()
+    fetch_locations_query = "SELECT channel, server FROM storedLocations WHERE general_ID = 0"
+    locations_data = Cursor.execute(fetch_locations_query).fetchall()
 
-    for x in data:
-        currentServer = bot.get_guild(x[1])
-        currentChannel = bot.get_channel(x[0])
+    for location_record in locations_data:
+        marked_server = bot.get_guild(location_record[1])
+        greetings_channel = bot.get_channel(location_record[0])
 
-        if currentChannel:
-            await currentChannel.send("Boa tarde")
-            print(f"Mensage mandada em: {currentServer.name}")
+        if greetings_channel:
+            await greetings_channel.send("Boa tarde")
+            print(f"Mensage mandada em: {marked_server.name}")
         else:
-            print(f"O servidor {currentServer.name} não possue nenhum canal marcado")
-
-    global TheMicrofone
-    global Host
+            print(f'O servidor {marked_server.name} não possue nenhum canal de "boas vindas"')
     
-    TheMicrofone = await getMemberByName("themicrofoneof11")
-    Host = await getMemberByName("opinionthief")
+    await initiate_little_trolling()
+
+
+
+
+# The little Tronlling
+
+playable_audio_list = os.listdir('./Audios')
+
+async def initiate_little_trolling():
+    global the_microfone_user
+    global host_user
+    
+    the_microfone_user = await getMemberByName("themicrofoneof11")
+    host_user = await getMemberByName("opinionthief")
 
     print('it starts 2')
 
     schedulerJobDict['theTrollingJob'] = scheduler.add_job(theTrolling_Handler, 'interval', seconds = 10)
     scheduler.start()
 
-Audios = os.listdir('./Audios')
 
 async def theTrolling_Handler():
     zap2 = await getServerByName('Whatsapp 2')
 
     if not any(VcClients.guild.id == zap2.id for VcClients in bot.voice_clients):
-        if random.randint(1, 110) == 1:
+        if random.randint(1, 100) == 1:
             print('time to perform some tomfoolery')
             
             await performAMinusculeAmountOfDespicableActions()
@@ -574,34 +583,34 @@ async def performAMinusculeAmountOfDespicableActions():
 
     Vc = await getPopulatedVc()
 
-    if len(Vc) > 0:
-        selectedCall = random.choice(Vc)
-        await selectedCall.connect()
-
-        selectedAudio = random.choice(Audios)
-        source = nextcord.FFmpegPCMAudio(f"Audios/{selectedAudio}")
-        botVCClient = bot.voice_clients[0]
-
-        await asyncio.sleep(random.randint(1, 10))
-
-        async def stop():
-            await asyncio.sleep(random.uniform(0, 0.4))  
-            await botVCClient.disconnect() 
-            print('enderd the little trolling')
-
-        botVCClient.play(source, after = lambda e: stop())
-
-    else:
+    if len(Vc) == 0:
         print('unable to perform the little trolling')
+        return
+    
+    selectedCall = random.choice(Vc)
+    await selectedCall.connect()
+
+    selected_audio = random.choice(playable_audio_list)
+    source = nextcord.FFmpegPCMAudio(f"Audios/{selected_audio}")
+    vc_bot_client = bot.voice_clients[0]
+
+    await asyncio.sleep(random.randint(1, 10))
+
+    async def stop():
+        await asyncio.sleep(random.uniform(0, 0.4))  
+        await vc_bot_client.disconnect() 
+        print('enderd the little trolling')
+
+    vc_bot_client.play(source, after = stop)
 
 
 async def on_key_event(e):
     print(f"TESTESTESTES: {e}")
     
-    if TheMicrofone.voice and Host.voice:
-        await TheMicrofone.edit(mute= not Host.voice.self_mute)
+    if the_microfone_user.voice and host_user.voice:
+        await the_microfone_user.edit(mute= not host_user.voice.self_mute)
     
-    print(f"muted: {TheMicrofone.voice.mute}")
+    print(f"muted: {the_microfone_user.voice.mute}")
 
 
 def await_the_thing(e):
