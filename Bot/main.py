@@ -13,10 +13,10 @@ import random
 # Main package import
 from nextcord import Intents
 from nextcord.ext import commands
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # other files import
 from bot_utilities import bot_utilities
+from sections.mischief import mischief
 
 # bot object creation
 
@@ -30,10 +30,15 @@ bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=inte
 # class instantiation
 
 utilities = bot_utilities(bot)
-
-scheduler = AsyncIOScheduler()
-
-schedulerJobDict = {}
+i_am_afraid = mischief(bot, bot.loop,
+    servers_with_tomfoolery_present= [
+        "Whatsapp 2",
+        "Teste de BOT",
+        "VILA DO CHAVES"
+        ],
+    playable_audio_list= os.listdir('./Audios'),
+    chance_denominator=100
+    )
 
 GeneralData = sqlite3.connect('GeneralBotData.db')
 Cursor = GeneralData.cursor()
@@ -484,9 +489,6 @@ async def on_message(message):
 
 # OTRAS COISA AINDA
 
-the_microfone_user = None
-host_user = None
-
 @bot.event
 async def on_ready():
     print(f"Logged in as: {bot.user.name}")
@@ -504,90 +506,16 @@ async def on_ready():
         else:
             print(f'O servidor {marked_server.name} não possue nenhum canal de "boas vindas"')
     
-    await initiate_little_trolling()
+    await i_am_afraid.commence_moderate_mischief()
 
 
-
-
-# The little Tronlling
-
-playable_audio_list = os.listdir('./Audios')
-servers_with_tomfoolery_present = [
-    "Whatsapp 2",
-    "Teste de BOT",
-    "VILA DO CHAVES"
-]
-
-async def initiate_little_trolling():
-    global the_microfone_user
-    global host_user
-    
-    the_microfone_user = await utilities.fetch_member_by_name("themicrofoneof11")
-    host_user = await utilities.fetch_member_by_name("opinionthief")
-
-    print('it starts 2')
-
-    schedulerJobDict['theTrollingJob'] = scheduler.add_job(theTrolling_Handler, 'interval', seconds = 10)
-    scheduler.start()
-
-
-async def theTrolling_Handler():
-    zap2 = await utilities.fetch_server_by_name('Whatsapp 2')
-
-    if not any(VcClients.guild.id == zap2.id for VcClients in bot.voice_clients):
-        if random.randint(1, 100) != 1:
-            print('time to perform some tomfoolery')
-            
-            await performAMinusculeAmountOfDespicableActions()
-        else:
-            print('nah')
-    
-    else:
-        print('unfortunately it is already here')
-
-
-async def getPopulatedVc():
-    voice_channels = []
-    
-    for server in servers_with_tomfoolery_present:
-        adquired_server = await utilities.fetch_server_by_name(server)
-        voice_channels += adquired_server.voice_channels
-
-    print('adquiring populated Vcs')
-
-    return [voice_channel for voice_channel in voice_channels if len(voice_channel.voice_states) > 0]
-
-
-async def performAMinusculeAmountOfDespicableActions():
-    
-    print('doing a little trolling')
-
-    Vc = await getPopulatedVc()
-
-    if len(Vc) == 0:
-        print('unable to perform the little trolling')
-        return
-    
-    selectedCall = random.choice(Vc)
-    await selectedCall.connect()
-
-    selected_audio = random.choice(playable_audio_list)
-    source = nextcord.FFmpegPCMAudio(f"Audios/{selected_audio}")
-    vc_bot_client = bot.voice_clients[0]
-
-    await asyncio.sleep(random.randint(1, 10))
-
-    async def stop(err):
-        if err:
-            print(err)
-        await asyncio.sleep(random.uniform(0, 0.4))  
-        await vc_bot_client.disconnect() 
-        print('enderd the little trolling')
-
-    vc_bot_client.play(source, after = stop)
 
 '''
 # Old code that synced my "mic" account's mute with my main account's mute, from the time i didnt have a mic yet.
+
+the_microfone_user = None
+host_user = None
+
 async def on_key_event(e):
     print(f"TESTESTESTES: {e}")
     

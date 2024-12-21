@@ -1,7 +1,6 @@
 # bot_utilities.py
 
 import nextcord
-import asyncio
 
 class bot_utilities:
     """General utility functions for the bot.
