@@ -1,0 +1,1 @@
+This directory is where the bot will create and store the databases

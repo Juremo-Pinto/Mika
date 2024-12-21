@@ -5,7 +5,7 @@ import nextcord
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from bot_utilities import bot_utilities
+from Bot.information_manager import information_manager
 
 class mischief:
     """A considerably small amount of mischief will be caused.
@@ -13,7 +13,7 @@ class mischief:
     def __init__(self, bot: nextcord.Client, loop, *, servers_with_tomfoolery_present: list[str], playable_audio_list: list[str], chance_denominator: int = 100):
         self.bot = bot
         self.loop = loop
-        self.utilities = bot_utilities(self.bot)
+        self.utilities = information_manager(self.bot)
         
         self.servers_with_tomfoolery_present = servers_with_tomfoolery_present
         self.playable_audio_list = playable_audio_list

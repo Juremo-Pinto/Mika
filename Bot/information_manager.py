@@ -2,8 +2,8 @@
 
 import nextcord
 
-class bot_utilities:
-    """General utility functions for the bot.
+class information_manager:
+    """information related functions for the bot.
     """
     def __init__(self, bot_object: nextcord.Client):
         """

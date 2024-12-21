@@ -15,7 +15,7 @@ from nextcord import Intents
 from nextcord.ext import commands
 
 # other files import
-from bot_utilities import bot_utilities
+from information_manager import information_manager
 from sections.mischief import mischief
 
 # bot object creation
@@ -29,18 +29,18 @@ bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=inte
 
 # class instantiation
 
-utilities = bot_utilities(bot)
+info_manager = information_manager(bot)
 i_am_afraid = mischief(bot, bot.loop,
     servers_with_tomfoolery_present= [
         "Whatsapp 2",
         "Teste de BOT",
         "VILA DO CHAVES"
         ],
-    playable_audio_list= os.listdir('./Audios'),
+    playable_audio_list= os.listdir('./Resources/Audios'),
     chance_denominator=100
     )
 
-GeneralData = sqlite3.connect('GeneralBotData.db')
+GeneralData = sqlite3.connect('Resources/DataBase/GeneralBotData.db')
 Cursor = GeneralData.cursor()
 GeneralData.execute("CREATE TABLE IF NOT EXISTS storedLocations(channel INT, server INT, general_ID)")
 GeneralData.execute("CREATE TABLE IF NOT EXISTS communityNotepad(message STR, author_ID INT, server_ID INT)")
@@ -110,12 +110,12 @@ class YTDLSource(nextcord.PCMVolumeTransformer):
         return info, addedToQueue
 
 
-
 async def getEmojis():
     main_server = await bot.fetch_guild(1263933229367562251)
     if main_server:
         emojis = main_server.emojis
     return emojis
+
 
 # Sistema de bloco de notas comunitario
 # Comando de anotar
