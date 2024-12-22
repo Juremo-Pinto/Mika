@@ -44,7 +44,7 @@ bot.load_extensions([
     'Cogs.general_events',
     'Cogs.voice_channel',
     'Cogs.community_notepad',
-    #'Cogs.youtube_playback', #Being rewritten
+    'Cogs.youtube_playback',
     'Cogs.text_channel_selection',
     'Cogs.mass_message_deletion',
     ])

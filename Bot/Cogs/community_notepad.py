@@ -22,7 +22,7 @@ class CommunityNotepad(commands.Cog):
 
     # Comando geral de mostrar
     @commands.command(name = "ShowInfo", aliases = ["mostre", "mostra", "apresente-me"])
-    async def showNotepad(self, ctx, *, a1):
+    async def showNotepad(self, ctx, *, a1 = None):
         match a1.strip():
             case "as anotações"|"as anotacoes"|"as anotação"|"as anotacao"|"as notas"|"as nota":
                 query = "SELECT message, author_ID FROM communityNotepad WHERE server_ID = ?"

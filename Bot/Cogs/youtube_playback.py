@@ -1,0 +1,330 @@
+import asyncio
+import random
+
+import nextcord
+from nextcord.ext import commands
+
+import yt_dlp
+
+
+class YTDLConfig:
+    """Configuration class for YTDLSource
+    """
+    def __init__(self):
+        self.ytdl_format_options = {
+            'format': 'bestaudio/best',
+            'restrictfilenames': True,
+            'noplaylist': True,
+            'nocheckcertificate': True,
+            'ignoreerrors': False,
+            'logtostderr': False,
+            'quiet': True,
+            'no_warnings': True,
+            'default_search': 'auto',
+            'source_address': '0.0.0.0',
+            'fragment_retries': 5,
+            'extract_flat': True
+        }
+
+        self.ytdl_extractor_options = {
+            'extract_flat': True,
+            'quiet': True,
+            'noplaylist': False
+        }
+
+        self.ffmpeg_format_options = {
+            'options': '-vn',
+            "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+        }
+
+        self.yt_downloader = yt_dlp.YoutubeDL(self.ytdl_format_options)
+        self.yt_info_extractor = yt_dlp.YoutubeDL(self.ytdl_extractor_options)
+
+
+class YTDLSource(nextcord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+
+        self.data = data
+
+        self.title = data.get('title')
+        self.url = ""
+
+    @classmethod
+    async def stream_from_url(cls, url, *, timeout = 30, config: YTDLConfig, loop=None):
+        loop = loop or asyncio.get_event_loop()
+
+        data = await asyncio.wait_for(loop.run_in_executor(None, lambda: config.yt_downloader.extract_info(url, download=False)), timeout=timeout)
+
+        filename = data['url']
+        return cls(nextcord.FFmpegPCMAudio(filename, **config.ffmpeg_format_options), data=data)
+        
+    @classmethod
+    async def get_info_from_url(cls, url, *, timeout = 15, config: YTDLConfig, loop=None):
+        loop = loop or asyncio.get_event_loop()
+        info = await asyncio.wait_for(loop.run_in_executor(None, lambda: config.yt_info_extractor.extract_info(url, download=False)), timeout=timeout)
+
+        return info
+
+
+"""
+if 'entries' in info and info['entries']:
+    if shuffle:
+        random.shuffle(info['entries'])
+    if addToQueue:
+        for entry in info['entries'][1:]:
+            music_queue.append([entry['url'], entry['title']])
+        addedToQueue = True
+    info = info['entries'][0]  
+"""
+
+
+class youtube_playback(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        
+        self.music_queue = {}
+        self.current_music = {}
+        
+        self.downloader_config = YTDLConfig()
+
+
+    async def get_voice_channel_id(self, voice_client):
+        return voice_client.channel.id if voice_client else None
+
+    async def is_shuffle(self, command_list):
+        return any(keyword in command_list[i].lower() for i in range(0, len(command_list)) for keyword in ["aleatorio", "shuffle", "embaralha", "embaraia", "embaralhado", "embaraiado"])
+    
+    async def is_playlist(self, url):
+        root_url = url.split('?')[0]
+        return root_url == "https://www.youtube.com/playlist"
+    
+    async def remove_url_parameters(self, full_url):
+        return full_url.split('&')[0]
+
+    async def initialize_dicts(self, ctx):
+        voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
+        
+        self.music_queue.setdefault(voice_channel_id, [])
+        self.current_music.setdefault(voice_channel_id, None)
+
+    async def is_playback_new(self, voice_client):
+        channel_id = await self.get_voice_channel_id(voice_client)
+        
+        return not voice_client.is_playing() and self.current_music[channel_id] is None
+
+
+    async def song_info_retriever(self, ctx, url):
+        try:
+            return await YTDLSource.get_info_from_url(url, config=self.downloader_config)
+            
+        except yt_dlp.DownloadError:
+            await ctx.reply("Isso literalmente não existe")
+            await ctx.message.delete()
+        except asyncio.TimeoutError:
+            await ctx.send("ih deu merda fi")
+            await ctx.message.delete()
+
+        return None
+
+
+    @commands.command("play", aliases = ["toca"])
+    async def extract_command_parameters(self, ctx, *, query):
+        command_list = query.split()
+        voice_client = ctx.voice_client
+
+        is_shuffle = await self.is_shuffle(command_list) if len(command_list) > 1 else False
+        url = command_list[0]
+
+        if voice_client:
+            await ctx.reply("Belezura, calma ae")
+            await self.handle_request(ctx, url, is_shuffle)
+        else:
+            await ctx.reply("Não to em nenhuma call cabeçudo")
+            await ctx.author.send('"aproveita e entra ai" é o comando pra entrar em call')
+
+
+
+    async def handle_request(self, ctx, url, is_shuffle):
+        await self.initialize_dicts(ctx)
+        
+        if await self.is_playlist(url):
+            await self.handle_playlist(ctx, url, is_shuffle)
+        else:
+            await self.handle_individual(ctx, url)
+
+
+
+    async def handle_playlist(self, ctx, url, is_shuffle):
+        playlist_info = await self.song_info_retriever(ctx, url)
+        await ctx.message.delete()
+        
+        if playlist_info is None:
+            return
+        
+        song_list = playlist_info['entries']
+        voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
+        
+        if is_shuffle:
+            await ctx.send("embaraiado ainda ó")
+            random.shuffle(song_list)
+        
+        self.music_queue[voice_channel_id] += song_list
+        
+        if await self.is_playback_new(ctx.voice_client):
+            await self.main_playback_loop(ctx)
+
+
+
+    async def handle_individual(self, ctx, url):
+        filtered_url = await self.remove_url_parameters(url)
+        song_info = await self.song_info_retriever(ctx, filtered_url)
+        
+        if song_info is None:
+            return
+        
+        song_info['url'] = filtered_url
+        await ctx.message.delete()
+        
+        voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
+        
+        if await self.is_playback_new(ctx.voice_client):
+            self.current_music[voice_channel_id] = song_info
+            await self.main_playback_loop(ctx)
+        else:
+            self.music_queue[voice_channel_id] += [song_info]
+
+
+
+    async def main_playback_loop(self, ctx):
+        voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
+        
+        while True:
+            current_song = self.current_music.get(voice_channel_id)
+            
+            if current_song is not None:
+                await self.play_song(ctx, current_song)
+            
+            if len(self.music_queue[voice_channel_id]) == 0:
+                break
+            
+            self.current_music[voice_channel_id] = self.music_queue[voice_channel_id].pop(0)
+        
+        self.current_music[voice_channel_id] = None
+        await ctx.send("Cabo a fila")
+
+
+
+    async def play_song(self, ctx, current_song):
+        try:          
+            async with ctx.typing():
+                playable_song_object = await YTDLSource.stream_from_url(current_song['url'], config=self.downloader_config, loop= self.bot.loop)
+
+            if not ctx.voice_client:
+                return
+
+            finished = asyncio.Event()
+
+            ctx.voice_client.play(playable_song_object, after= lambda e: finished.set())
+            await ctx.send(f"Tocando: **{current_song['title']}**")
+            
+            await finished.wait()
+            
+            print("Teste")
+        
+        except (yt_dlp.utils.DownloadError, asyncio.TimeoutError) as e:
+                await ctx.send("Deu ruim, proxima música")
+
+
+
+    @commands.command("skip", aliases = ["skipa", "pula"])
+    async def skip(self, ctx, amount = 1):
+        voice_client = ctx.voice_client
+        voice_channel_id = await self.get_voice_channel_id(voice_client)
+        
+        if not isinstance(amount, int) or amount <= 0:
+            amount = 1
+        
+        if voice_client:
+            await self.initialize_dicts(ctx)
+            
+            if amount > 1 and len(self.music_queue[voice_channel_id]) >= amount:
+                del self.music_queue[voice_channel_id][:amount - 1]
+                
+            elif amount > 1:
+                await ctx.send("Como que skipa um numero maior que a fila porra")
+                await ctx.send(f"(Nota: a fila tem {len(self.music_queue[voice_channel_id]) + 1} musicas)")
+                return
+                
+            voice_client.stop()
+            await ctx.reply("tá")
+        else:
+            await ctx.reply("Oque, porra")
+
+
+    @commands.command("playing", aliases = ["diz", "fala"])
+    async def playing(self, ctx, *, msg):
+        voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
+        
+        if voice_channel_id is not None:
+            await self.initialize_dicts(ctx)
+        
+        if msg in ["oq tá tocando", "oq tá tocando", "oq tá tocano", "oq ta tocano", "oq ta tocando", "a musica que esta sendo reproduzida nesse momento", "a musica"]:
+            if voice_channel_id and self.current_music[voice_channel_id]:
+                await ctx.reply(f"**{self.current_music[voice_channel_id]['title']}**")
+            else:
+                await ctx.reply("nada")
+        
+        elif msg in ["as musica", "todas as musica", "tudo", "a fila", "a lista"]:
+            if voice_channel_id and len(self.music_queue[voice_channel_id]) > 0 and self.music_queue[voice_channel_id][0]:
+                await self.compile_messages(ctx, voice_channel_id)
+            elif voice_channel_id and self.current_music[voice_channel_id] is not None:
+                await ctx.send(f"1 - **{self.current_music[voice_channel_id]['title']}**")
+            else:
+                await ctx.reply("a fila ta vazia fi")
+
+
+    async def compile_messages(self, ctx, voice_channel_id):
+        message = f"1 - **{self.current_music[voice_channel_id]['title']}**\n"
+        
+        song_placement = 2
+        
+        for song in self.music_queue[voice_channel_id]:
+            song_message = f"{song_placement} - {song['title']}\n"
+            
+            if song_placement > 100:
+                message += f"*+ {(len(self.music_queue[voice_channel_id]) - song_placement) + 2} outras...*"
+                break
+            
+            if len(message) + len(song_message) > 2000:
+                await ctx.send(message)
+                message = song_message
+            else:
+                message += song_message
+            
+            song_placement += 1
+
+        await ctx.send(message)
+
+
+    @commands.command("shuffle", aliases = ["embaralha", "embaraia"])
+    async def shuffle_list(self, ctx):
+        voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
+        
+        if voice_channel_id in self.music_queue and len(self.music_queue[voice_channel_id]) > 0:
+            random.shuffle(self.music_queue[voice_channel_id])
+            await ctx.reply("Ok tá bem aleatorio")
+        
+        else:
+            await ctx.send("que?")
+
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if member == self.bot.user and before.channel and not after.channel:
+            self.music_queue[before.channel.id] = []
+            self.current_music[before.channel.id] = None
+
+
+def setup(bot):
+    bot.add_cog(youtube_playback(bot))
