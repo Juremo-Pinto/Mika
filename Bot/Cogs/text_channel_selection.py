@@ -8,7 +8,7 @@ class TextChannelSelection(commands.Cog):
         self.database = DatabaseManager(initialize= False)
         self.command_map = {
         "O BOA TARDE": 0,
-        "O CANAL DE MUSICA": 1
+        # "O CANAL DE MUSICA": 1  --WIP, not implemented and im too lazy, someday maybe
         # for now thats it
         }
 
@@ -19,7 +19,7 @@ class TextChannelSelection(commands.Cog):
         channel_id = ctx.channel.id
 
         if index is not None:
-            query1 = "SELECT channel FROM storedLocations WHERE server_ID = ? AND general_ID = ?"
+            query1 = "SELECT channel_ID FROM storedLocations WHERE server_ID = ? AND general_ID = ?"
             data = await self.database.fetchone(query1, (server_id, index))
 
             if data:

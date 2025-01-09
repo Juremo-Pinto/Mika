@@ -20,6 +20,10 @@ class DatabaseManager:
         self.cursor = await self.database.cursor()
 
 
+    async def execute(self, query, parameters = None):
+        return await self.cursor.execute(query, parameters)
+
+
     async def setup(self):
         await self.database.execute("CREATE TABLE IF NOT EXISTS storedLocations(channel_ID INTEGER, server_ID INTEGER, general_ID INTEGER)")
         await self.database.execute("CREATE TABLE IF NOT EXISTS communityNotepad(message TEXT, author_ID INTEGER, server_ID INTEGER)")
