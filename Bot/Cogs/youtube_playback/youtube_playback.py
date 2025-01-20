@@ -16,12 +16,28 @@ class youtube_playback(commands.Cog):
         self.music_queue = {}
         self.current_music = {}
         
+        self.blacklisted_roles = ['Proibido de Musicar']
+        
         self.downloader_config = YTDLConfig()
-
-
+    
+    async def get_blacklisted_guild_roles(self, ctx):
+        all_collected_roles = []
+        
+        for role_name in self.blacklisted_roles:
+            role_object = nextcord.utils.get(ctx.guild.roles, name=role_name)
+            
+            all_collected_roles += [role_object] if role_object else []
+        
+        return all_collected_roles
+    
+    async def is_user_blacklisted(self, ctx):
+        blacklisted_roles = await self.get_blacklisted_guild_roles(ctx)
+        
+        return any(user_role.id == blacklisted_role.id for blacklisted_role in blacklisted_roles for user_role in ctx.author.roles)
+    
     async def get_voice_channel_id(self, voice_client):
         return voice_client.channel.id if voice_client else None
-
+    
     async def is_shuffle(self, command_list):
         return any(keyword in command_list[i].lower() for i in range(0, len(command_list)) for keyword in ["aleatorio", "shuffle", "embaralha", "embaraia", "embaralhado", "embaraiado"])
     
@@ -31,19 +47,19 @@ class youtube_playback(commands.Cog):
     
     async def remove_url_parameters(self, full_url):
         return full_url.split('&')[0]
-
+    
     async def initialize_dicts(self, ctx):
         voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
         
         self.music_queue.setdefault(voice_channel_id, [])
         self.current_music.setdefault(voice_channel_id, None)
-
+    
     async def is_playback_new(self, voice_client):
         channel_id = await self.get_voice_channel_id(voice_client)
         
         return not voice_client.is_playing() and self.current_music[channel_id] is None
-
-
+    
+    
     async def song_info_retriever(self, ctx, url):
         try:
             return await YTDLSource.get_info_from_url(url, config=self.downloader_config)
@@ -54,27 +70,32 @@ class youtube_playback(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.send("ih deu merda fi")
             await ctx.message.delete()
-
+        
         return None
-
-
+    
+    
+    
     @commands.command("play", aliases = ["toca"])
     async def extract_command_parameters(self, ctx, *, query):
+        if await self.is_user_blacklisted(ctx):
+            await ctx.reply("Tu tá BANIDO de musicar")
+            return
+        
         command_list = query.split()
         voice_client = ctx.voice_client
-
+        
         is_shuffle = await self.is_shuffle(command_list) if len(command_list) > 1 else False
         url = command_list[0]
-
+        
         if voice_client:
             await ctx.reply("Belezura, calma ae")
             await self.handle_request(ctx, url, is_shuffle)
         else:
             await ctx.reply("Não to em nenhuma call cabeçudo")
             await ctx.author.send('"aproveita e entra ai" é o comando pra entrar em call')
-
-
-
+    
+    
+    
     async def handle_request(self, ctx, url, is_shuffle):
         await self.initialize_dicts(ctx)
         
@@ -82,9 +103,9 @@ class youtube_playback(commands.Cog):
             await self.handle_playlist(ctx, url, is_shuffle)
         else:
             await self.handle_individual(ctx, url)
-
-
-
+    
+    
+    
     async def handle_playlist(self, ctx, url, is_shuffle):
         playlist_info = await self.song_info_retriever(ctx, url)
         await ctx.message.delete()
@@ -103,9 +124,9 @@ class youtube_playback(commands.Cog):
         
         if await self.is_playback_new(ctx.voice_client):
             await self.main_playback_loop(ctx)
-
-
-
+    
+    
+    
     async def handle_individual(self, ctx, url):
         filtered_url = await self.remove_url_parameters(url)
         song_info = await self.song_info_retriever(ctx, filtered_url)
@@ -120,12 +141,12 @@ class youtube_playback(commands.Cog):
         
         if await self.is_playback_new(ctx.voice_client):
             self.current_music[voice_channel_id] = song_info
-            await self.main_playback_loop(ctx)
+            asyncio.run_coroutine_threadsafe(self.main_playback_loop(ctx), self.bot.loop)
         else:
             self.music_queue[voice_channel_id] += [song_info]
-
-
-
+    
+    
+    
     async def main_playback_loop(self, ctx):
         voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
         
@@ -142,19 +163,19 @@ class youtube_playback(commands.Cog):
         
         self.current_music[voice_channel_id] = None
         await ctx.send("Cabo a fila")
-
-
-
+    
+    
+    
     async def play_song(self, ctx, current_song):
         try:          
             async with ctx.typing():
                 playable_song_object = await YTDLSource.stream_from_url(current_song['url'], config=self.downloader_config, loop= self.bot.loop)
-
+            
             if not ctx.voice_client:
                 return
-
+            
             finished = asyncio.Event()
-
+            
             ctx.voice_client.play(playable_song_object, after= lambda e: finished.set())
             await ctx.send(f"Tocando: **{current_song['title']}**")
             
@@ -164,11 +185,15 @@ class youtube_playback(commands.Cog):
         
         except (yt_dlp.utils.DownloadError, asyncio.TimeoutError) as e:
                 await ctx.send("Deu ruim, proxima música")
-
-
-
+    
+    
+    
     @commands.command("skip", aliases = ["skipa", "pula"])
     async def skip(self, ctx, amount = 1):
+        if await self.is_user_blacklisted(ctx):
+            await ctx.reply("Tu tá BANIDO de musicar")
+            return
+        
         voice_client = ctx.voice_client
         voice_channel_id = await self.get_voice_channel_id(voice_client)
         
@@ -190,8 +215,8 @@ class youtube_playback(commands.Cog):
             await ctx.reply("tá")
         else:
             await ctx.reply("Oque, porra")
-
-
+    
+    
     @commands.command("playing", aliases = ["diz", "fala"])
     async def playing(self, ctx, *, msg):
         voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
@@ -212,8 +237,8 @@ class youtube_playback(commands.Cog):
                 await ctx.send(f"1 - **{self.current_music[voice_channel_id]['title']}**")
             else:
                 await ctx.reply("a fila ta vazia fi")
-
-
+    
+    
     async def compile_messages(self, ctx, voice_channel_id):
         message = f"1 - **{self.current_music[voice_channel_id]['title']}**\n"
         
@@ -233,12 +258,16 @@ class youtube_playback(commands.Cog):
                 message += song_message
             
             song_placement += 1
-
+        
         await ctx.send(message)
-
-
+    
+    
     @commands.command("shuffle", aliases = ["embaralha", "embaraia"])
     async def shuffle_list(self, ctx):
+        if await self.is_user_blacklisted(ctx):
+            await ctx.reply("Tu tá BANIDO de musicar")
+            return
+        
         voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
         
         if voice_channel_id in self.music_queue and len(self.music_queue[voice_channel_id]) > 0:
@@ -247,8 +276,8 @@ class youtube_playback(commands.Cog):
         
         else:
             await ctx.send("que?")
-
-
+    
+    
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         if member == self.bot.user and before.channel and not after.channel:

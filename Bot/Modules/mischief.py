@@ -11,13 +11,14 @@ from resources_path import ResourcesPath
 class Mischief:
     """A considerably small amount of mischief will be caused.
     """
-    def __init__(self, bot: nextcord.Client, *, servers_with_tomfoolery_present: list[str], playable_audio_list_path: list[str], chance_denominator: int = 100):
+    def __init__(self, bot: nextcord.Client, *, servers_with_tomfoolery_present: list[str], playable_audio_list_path: list[str], chance_denominator: int = 100, interval_in_seconds: int = 10):
         self.bot = bot
         self.info_manager = InformationManager(self.bot)
         
         self.servers_with_tomfoolery_present = servers_with_tomfoolery_present
         self.playable_audio_list = playable_audio_list_path
         self.chance_denominator = chance_denominator
+        self.interval = interval_in_seconds
         
         self.scheduler_jobs_dict = {}
         self.scheduler = AsyncIOScheduler()
@@ -29,7 +30,7 @@ class Mischief:
         """
         print('it starts')
         
-        self.scheduler_jobs_dict['theTrollingJob'] = self.scheduler.add_job(self.mischief_interface, 'interval', seconds = 10)
+        self.scheduler_jobs_dict['theTrollingJob'] = self.scheduler.add_job(self.mischief_interface, 'interval', seconds = self.interval)
         self.scheduler.start()
 
 

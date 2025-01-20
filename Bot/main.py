@@ -33,7 +33,8 @@ i_am_afraid = Mischief(bot,
         "VILA DO CHAVES"
         ],
     playable_audio_list_path= os.listdir(resources('audio')),
-    chance_denominator=100
+    chance_denominator=100,
+    interval_in_seconds = 10
     )
 
 
