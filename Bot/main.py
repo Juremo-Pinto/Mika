@@ -11,6 +11,7 @@ from nextcord.ext import commands
 from Modules.information_manager import InformationManager
 from Modules.database_manager import DatabaseManager
 from Modules.mischief import Mischief
+from Modules.command_permissions import RolePermissionHandler
 from resources_path import ResourcesPath
 
 #Bot Initialization
@@ -25,6 +26,7 @@ bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=inte
 resources = ResourcesPath()
 info_manager = InformationManager(bot)
 database = DatabaseManager()
+bot_usage_permission = RolePermissionHandler('forbid_BOT')
 
 i_am_afraid = Mischief(bot,
     servers_with_tomfoolery_present= [
@@ -47,6 +49,7 @@ bot.load_extensions([
     'Cogs.youtube_playback.youtube_playback',
     'Cogs.text_channel_selection',
     'Cogs.mass_message_deletion',
+    'Cogs.role_tag_controller',
     ])
 
 
@@ -59,6 +62,14 @@ async def on_ready():
     
     await i_am_afraid.commence_moderate_mischief()
 
+
+@bot.event
+async def on_message(msg):
+    if msg.content.startswith(tuple(await bot.get_prefix(msg))) and await bot_usage_permission.is_user_role_tagged(msg):
+        print(f'Blacklisted user "{msg.author.name}" tried using bot in {msg.guild.name}, {msg.channel.name}')
+        return
+    
+    await bot.process_commands(msg)
 
 if __name__ == '__main__':
     bot.run(os.environ['DISCORD_TOKEN'])

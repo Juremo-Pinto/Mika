@@ -1,0 +1,59 @@
+# Comandos de Usuário
+--NEWMSG--
+## Comandos Gerais
+- **<prefix> ayuda**: Mostra esta mensagem de ajuda.
+- **<prefix> repita [qualquer texto]**: Repete a mensagem que você enviar (e deleta a mensagem original).
+- **<prefix> xingamento**: Ele fica triste.
+    - Exemplo: `aproveita e vai catar coquinho`
+    - legal né? uma bosta eu sei (xingamento real também funciona, se bobear)
+- **<prefix> autista**: cachoro abacaixi.
+- **fat fuck**: fat fuck
+--NEWMSG--
+## Comandos de Canal de Voz
+- **<prefix> entra ai**: Junta-se a um canal de voz.
+- **<prefix> vaza**: Sai do canal de voz atual.
+--NEWMSG--
+## Comandos do Bloco de Notas da Comunidade
+- **<prefix> anota pra mim**: Escreve uma nota no bloco de notas da comunidade.
+- **<prefix> mostra as nota**: Mostra as notas.
+- **<prefix> mata**: Deleta notas especificadas.
+--NEWMSG--
+## Comandos de Deleção de Mensagens em Massa
+- **<prefix> marca**: Marca a mensagem atual para deleção.
+- **<prefix> deleta**: Deleta todas as mensagens marcadas.
+--NEWMSG--
+## Comandos de Reprodução do YouTube
+- **<prefix> toca**: Toca uma música ou playlist de uma URL fornecida.
+- **<prefix> skipa**: Pula a música atual ou um número especificado de músicas na fila.
+- **<prefix> diz a fila**: Mostra a música que está tocando ou a fila inteira.
+- **<prefix> embaraia**: Embaralha a fila de músicas atual.
+
+--MODERATORCOMMANDS--
+
+# COMANDOS DE ADMIN
+
+--NEWMSG--
+
+## Seleção de canal de texto
+
+lista de palavras chave:
+- **"O BOA TARDE"**  ->  O canal que o bot manda mensagem toda vez que é ativado
+*por enquanto é só isso, desculpa*
+
+comandos:
+- **<prefix> LEMBRA [palavra chave]**: Marca o canal em qual essa mensagem for mandada com uma das chaves na lista
+- **<prefix> ESQUECE [palavra chave]**: Desmarca um canal marcado de uma chave
+
+--NEWMSG--
+
+## Permissões de cargo (definem permissões a algum cargos, dependendo da categoria)
+
+lista de categorias de permissão:
+- **"forbid_BOT"**  ->  Bloqueia o usuário de usar QUALQUER comando do bot (exceto fat fuck)
+- **"forbid_youtube_playback"**  ->  Impede o uso relacionado a função de musica do bot (com exceção do comando de mostrar a musica atual e a fila)
+- **"forbid_audio_playback"**  ->  Mesma coisa de youtube_playback, porém também impede o usuário de usar comandos de canal de call (entrar e sair)
+- **"forbid_voice_chat_control"**  ->  Impede apenas o uso de comandos de controle de call (entrar e sair)
+
+comandos:
+- **"<prefix> permissão-de-cargo [cargo] [categoria]"**: Define a categoria de permissão para o cargo especificado.
+- **"<prefix> un-permissão-de-cargo [cargo] [categoria]"**: WIP, Remove a categoria de permissão para o cargo especificado.

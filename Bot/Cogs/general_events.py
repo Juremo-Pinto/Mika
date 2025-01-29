@@ -4,17 +4,25 @@ from Modules.database_manager import DatabaseManager
 class GeneralEvents(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.database = DatabaseManager(initialize=False)
+        self.database = DatabaseManager()
 
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if str.lower(message.content) == 'fat fuck' and message.author.id != self.bot.user.id:
-            await message.channel.send('fat fuck')
+            await message.channel.send(message.content)
 
 
     @commands.Cog.listener()
     async def on_ready(self):
+        await self.database.setup(structure={
+            'storedLocations': {
+                'channel_ID': 'INTEGER',
+                'server_ID': 'INTEGER',
+                'general_ID': 'INTEGER'
+            }
+        })
+        
         fetch_locations_query = "SELECT channel_ID, server_ID FROM storedLocations WHERE general_ID = 0"
         locations_data = await self.database.fetchall(fetch_locations_query)
 

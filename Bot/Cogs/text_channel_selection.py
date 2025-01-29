@@ -2,18 +2,26 @@ import asyncio
 from nextcord.ext import commands
 from Modules.database_manager import DatabaseManager
 
+from Modules.command_permissions import PermissionUtils
+
 class TextChannelSelection(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.database = DatabaseManager(initialize= False)
+        self.database = DatabaseManager()
         self.command_map = {
         "O BOA TARDE": 0,
         # "O CANAL DE MUSICA": 1  --WIP, not implemented and im too lazy, someday maybe
         # for now thats it
         }
 
-    @commands.command(name = "selecionarCanal", aliases = ["selecionarcanal", "channelselect", "channelSelect", "canallembrar", "LEMBRA"])
-    async def channelStore(self, ctx, *, msg):
+    @commands.command(name = "selecionarCanal", aliases = ["selecionarcanal", "channelselect", "channelSelect", "canallembrar", "LEMBRA", 'lembra'])
+    async def channelStore(self, ctx, *, msg = None):
+        if not await PermissionUtils.is_moderator(ctx):
+            return
+        
+        if msg is None:
+            await ctx.send("que, lembrar do que?")
+        
         index = self.command_map.get(msg, None)
         server_id = ctx.guild.id
         channel_id = ctx.channel.id
@@ -42,8 +50,14 @@ class TextChannelSelection(commands.Cog):
 
 
 
-    @commands.command(name = "esquecerCanal", aliases = ["esquecercanal", "ESQUECE", "ESQUEÇE"])
-    async def channelForget(self, ctx, *, msg):
+    @commands.command(name = "esquecerCanal", aliases = ["esquecercanal", "ESQUECE", "ESQUEÇE", "esquece", "esqueçe"])
+    async def channelForget(self, ctx, *, msg = None):
+        if not await PermissionUtils.is_moderator(ctx):
+            return
+        
+        if msg is None:
+            await ctx.send("que, esquecer o que?")
+        
         index = self.command_map.get(msg, None)
         if index is not None:
             channel_id = ctx.channel.id

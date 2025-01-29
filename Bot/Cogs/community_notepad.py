@@ -1,3 +1,4 @@
+import asyncio
 from nextcord.ext import commands
 from Modules.quick_cache import QuickCache
 from Modules.database_manager import DatabaseManager
@@ -7,9 +8,18 @@ from typing import Callable
 class CommunityNotepad(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.database = DatabaseManager(initialize=False)
-
-
+        self.database = DatabaseManager()
+        
+        task = self.database.setup(structure={
+            'communityNotepad': {
+                'message': 'TEXT',
+                'author_ID': 'INTEGER',
+                'general_ID': 'INTEGER'
+            }
+        })
+        asyncio.run(task)
+    
+    
     @commands.command(name = "notePadWrite", aliases = ["anota"])
     async def communityNotepadFunction(self, ctx, a1, a2, *, msg = None):
         if a1 == "pra" and a2 == "mim":
@@ -21,8 +31,8 @@ class CommunityNotepad(commands.Cog):
                 await ctx.reply(f"Anotado <:cat:1264072257433632789>")
             else:
                 await ctx.reply("Anotar o que porra")
-
-
+    
+    
     # Comando geral de mostrar
     @commands.command(name = "showInfo", aliases = ["mostre", "mostra", "apresente-me"])
     async def show_notepad(self, ctx, *, a1 = None):
@@ -39,8 +49,8 @@ class CommunityNotepad(commands.Cog):
                 
             case _:
                 await ctx.reply("porra é isso")
-
-
+    
+    
     async def show_all_notes(self, ctx):
         query = "SELECT message, author_ID FROM communityNotepad WHERE server_ID = ?"
         data = await self.database.fetchall(query, (ctx.guild.id,))
@@ -60,8 +70,8 @@ class CommunityNotepad(commands.Cog):
             result.append(f"- \"{message[0]}\"\nAutor: {author}")
         
         await ctx.send("\n".join(result))
-
-
+    
+    
     async def show_user_notes(self, ctx):
         query = "SELECT message FROM communityNotepad WHERE author_ID = ? AND server_ID = ?"
         data = await self.database.fetchall(query, (ctx.author.id, ctx.guild.id))
@@ -75,9 +85,9 @@ class CommunityNotepad(commands.Cog):
             result.append(f"{i} - \"{x[0]}\"")
         
         await ctx.send("\n".join(result))
-
-
-
+    
+    
+    
     # Comando de deletar nota
     @commands.command(name = "deleteNotePad", aliases = ["mata", "MATA"])
     async def delete_note(self, ctx, *, i):

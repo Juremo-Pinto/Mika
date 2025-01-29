@@ -8,6 +8,7 @@ import yt_dlp
 
 from Cogs.youtube_playback.YTDLConfig import YTDLConfig
 from Cogs.youtube_playback.YTDLSource import YTDLSource
+from Modules.command_permissions import RolePermissionHandler
 
 class youtube_playback(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -16,24 +17,9 @@ class youtube_playback(commands.Cog):
         self.music_queue = {}
         self.current_music = {}
         
-        self.blacklisted_roles = ['Proibido de Musicar']
+        self.role_handler = RolePermissionHandler('forbid_audio_playback', 'forbid_youtube_playback')
         
         self.downloader_config = YTDLConfig()
-    
-    async def get_blacklisted_guild_roles(self, ctx):
-        all_collected_roles = []
-        
-        for role_name in self.blacklisted_roles:
-            role_object = nextcord.utils.get(ctx.guild.roles, name=role_name)
-            
-            all_collected_roles += [role_object] if role_object else []
-        
-        return all_collected_roles
-    
-    async def is_user_blacklisted(self, ctx):
-        blacklisted_roles = await self.get_blacklisted_guild_roles(ctx)
-        
-        return any(user_role.id == blacklisted_role.id for blacklisted_role in blacklisted_roles for user_role in ctx.author.roles)
     
     async def get_voice_channel_id(self, voice_client):
         return voice_client.channel.id if voice_client else None
@@ -77,7 +63,7 @@ class youtube_playback(commands.Cog):
     
     @commands.command("play", aliases = ["toca"])
     async def extract_command_parameters(self, ctx, *, query):
-        if await self.is_user_blacklisted(ctx):
+        if await self.role_handler.is_user_role_tagged(ctx):
             await ctx.reply("Tu tá BANIDO de musicar")
             return
         
@@ -190,7 +176,7 @@ class youtube_playback(commands.Cog):
     
     @commands.command("skip", aliases = ["skipa", "pula"])
     async def skip(self, ctx, amount = 1):
-        if await self.is_user_blacklisted(ctx):
+        if await self.role_handler.is_user_role_tagged(ctx):
             await ctx.reply("Tu tá BANIDO de musicar")
             return
         
@@ -264,7 +250,7 @@ class youtube_playback(commands.Cog):
     
     @commands.command("shuffle", aliases = ["embaralha", "embaraia"])
     async def shuffle_list(self, ctx):
-        if await self.is_user_blacklisted(ctx):
+        if await self.role_handler.is_user_role_tagged(ctx):
             await ctx.reply("Tu tá BANIDO de musicar")
             return
         

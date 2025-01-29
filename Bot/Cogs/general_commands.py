@@ -1,7 +1,9 @@
+import os
 import nextcord
 from nextcord.ext import commands
 
 from resources_path import ResourcesPath
+from Modules.command_permissions import PermissionUtils
 
 class GeneralCommands(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -9,7 +11,7 @@ class GeneralCommands(commands.Cog):
         self.resources = ResourcesPath()
     
     
-    @commands.command(name = "repita")
+    @commands.command(name = "repita", aliases = ['repete'])
     async def sendMessage(self, ctx, *, message):
         await ctx.send(message)
         await ctx.message.delete()
@@ -28,30 +30,49 @@ class GeneralCommands(commands.Cog):
         #for x in emojis:
         #    print(f"{x}")
         await ctx.author.send(f"<:trol:968658017086242897>")
-
+    
     # Comando de ser xingado ai que triste
     @commands.command(name = "xingamento", aliases = ["si", "se", "vai"])
     async def pongbop(self, ctx, *, confirm):
-        if confirm in ["mata", "mata mlk", "se fude", "si fude", "sifude", "se foder", "sifuder", "si fuder", "pro caralho", "pra merda", "catar coquinho"]:
+        if confirm in ["mata", "mata mlk", "se fude", "si fude", "sifude", "se foder", "sifuder", "si fuder", "pro caralho", "pra merda", "catar coquinho", "toma no cu"]:
             await ctx.reply("<:spong_bop:1264260742975197264>")
-
-
+    
+    
     @commands.command(name = "autista")
     async def sendImage(self, ctx):
         file = nextcord.File(f"{self.resources('image')}/autismo.jpg", filename="autismo.png")
         await ctx.send(file=file)
         await ctx.message.delete()
-
-
-# Comando de Ajuda
-    @commands.command(name = "ayuda")
-    async def test(self, ctx):
-        await ctx.author.send(
-            """
-            Discurpa, mais tamo refazendo saporra de pagina de ajuda, por favor, volte mais tarde.
-            """
-            )
-        await ctx.author.send("<:spong_bop:1264260742975197264>")
+    
+    
+    # Comando de Ajuda
+    @commands.command(name = "ayuda", aliases = ['ajuda', 'helpa'])
+    async def test(self, ctx, *, args = None):
+        help_text_file_path = os.path.join(self.resources('text'), "Help_message.txt")
+        is_mod = await PermissionUtils.is_moderator(ctx)
+        only_mod = args is not None and 'só mod' in args.lower()
+        
+        with open(help_text_file_path, encoding='UTF-8') as f:
+            help_text = f.read()
+            help_text = await self.get_help_text(help_text, is_mod, only_mod)
+            help_text = help_text.replace('<prefix> ', (await self.bot.get_prefix(ctx))[0])
+            help_text = help_text.split('--NEWMSG--')
+            
+            for paragraph in help_text:
+                paragraph = paragraph.strip()
+                
+                if len(paragraph) != 0:
+                    await ctx.author.send(paragraph)
+    
+    
+    async def get_help_text(self, help_text, is_mod, only_mod):
+        if not is_mod:
+            return help_text.split('--MODERATORCOMMANDS--')[0]
+        
+        if only_mod:
+            return help_text.split('--MODERATORCOMMANDS--')[1]
+        
+        return help_text.replace('--MODERATORCOMMANDS--', '--NEWMSG--')
 
 
 
