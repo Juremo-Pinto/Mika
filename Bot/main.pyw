@@ -47,8 +47,8 @@ i_am_afraid = Mischief(bot,
         "Bot Testing Ground",
         "VILA DO CHAVES"
         ],
-    chance_denominator=100,
-    interval_in_seconds = 10
+    chance_denominator=110,
+    interval_in_seconds = 12
     )
 
 
@@ -88,8 +88,9 @@ async def cleanup():
     await i_am_afraid.QUIT_HAVING_FUN()
     await DatabaseManager.disconnect_all()
 
+
 if __name__ == '__main__':
-    bot.run(os.environ['DISCORD_TOKEN'])
+    bot.run(os.environ['AUTISM_DISCORD_TOKEN'])
     asyncio.run(cleanup())
     print("Shutted down lmao")
     exit()

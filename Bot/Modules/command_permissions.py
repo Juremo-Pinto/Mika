@@ -1,4 +1,5 @@
 import asyncio
+import os
 from typing import Tuple
 
 from Modules.database_manager import DatabaseManager
@@ -63,5 +64,5 @@ class PermissionUtils:
         return ctx.author.guild_permissions.administrator
     
     async def is_bot_developer(ctx):
-        bot_developer_id = 604384249096699914
-        return ctx.author.id == bot_developer_id
+        bot_developer_id = os.environ['MINE_DISCORD_ID']
+        return ctx.author.id == int(bot_developer_id)

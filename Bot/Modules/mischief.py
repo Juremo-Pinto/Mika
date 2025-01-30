@@ -4,11 +4,11 @@ import os
 import random
 
 import nextcord
-from nextcord.ext import commands
 
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from Modules.utils import Utils
 from Modules.information_manager import InformationManager
 from resources_path import ResourcesPath
 
@@ -17,7 +17,7 @@ class Mischief:
     """
     def __init__(self, bot: nextcord.Client, *, servers_with_tomfoolery_present: list[str], chance_denominator: int = 100, interval_in_seconds: int = 10):
         self.bot = bot
-        self.info_manager = InformationManager(self.bot)
+        self.info = InformationManager(self.bot)
         
         self.servers_with_tomfoolery_present = servers_with_tomfoolery_present
         self.chance_denominator = chance_denominator
@@ -45,47 +45,55 @@ class Mischief:
     
     
     async def mischief_interface(self):
-        if random.randint(1, self.chance_denominator) == 1:
-            print('time to perform some tomfoolery')
-            
-            await self.perform_a_minuscule_amount_of_despicable_actions()
+        try:
+            if random.randint(1, self.chance_denominator) == 1:
+                
+                await self.perform_a_minuscule_amount_of_despicable_actions()
+        except Exception as e:
+            await self.on_error(e)
         
         # decided to omit the print stating it didn't happen because it would pollute the output way too much
+    
+    
+    async def on_error(self, error):
+        if await Utils.has_terminal():
+            raise error
+        
+        dev = await self.info.get_bot_dev()
+        
+        if dev:
+            await dev.send(f'Error in MISCHIEF:\n{error}')
     
     
     async def get_populated_vcs(self):
         voice_channels = []
         
         for server in self.servers_with_tomfoolery_present:
-            adquired_server = await self.info_manager.fetch_guild_by_name(server)
+            adquired_server = await self.info.fetch_guild_by_name(server)
             
             if not any(VcClients.guild.id == adquired_server.id for VcClients in self.bot.voice_clients):
                 voice_channels += adquired_server.voice_channels
-        
-        print('acquiring populated Vcs')
         
         return [voice_channel for voice_channel in voice_channels if len(voice_channel.voice_states) > 0]
     
     
     async def get_random_audio(self):
-        playable_audio_list = os.listdir(self.resources['audio'])
+        playable_audio_list = os.listdir(self.resources('audio'))
         selected_audio = random.choice(playable_audio_list)
-        return os.path.join(self.resources['audio'], selected_audio)
+        return os.path.join(self.resources('audio'), selected_audio), selected_audio
     
     
     async def perform_a_minuscule_amount_of_despicable_actions(self):
-        print('doing a little trolling')
-        
         voice_channels = await self.get_populated_vcs()
         
         if len(voice_channels) == 0:
-            print('unable to perform the little trolling')
+            print('Mischief: No voice channels available')
             return
         
         await random.choice(voice_channels).connect()
         
-        
-        source = nextcord.FFmpegPCMAudio(await self.get_random_audio())
+        audio_path, audio_name = await self.get_random_audio()
+        source = nextcord.FFmpegPCMAudio(audio_path)
         vc_bot_client = self.bot.voice_clients[0]
         
         await asyncio.sleep(random.randint(1, 10))
@@ -95,9 +103,9 @@ class Mischief:
                 print(err)
             await asyncio.sleep(random.uniform(0, 0.6))  
             await vc_bot_client.disconnect() 
-            print('enderd the little trolling')
         
         vc_bot_client.play(source, after = stop)
+        print(f"Mischief: Love me some {audio_name}")
 
 
 def setup(bot):

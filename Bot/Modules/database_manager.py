@@ -9,6 +9,8 @@ class DatabaseManager:
     
     def __init__(self):
         self.resources = ResourcesPath()
+        self.loop = None
+        
         self.database = None
         self.cursor = None
         
@@ -16,8 +18,20 @@ class DatabaseManager:
         
         self._instances.add(self)
     
+    def __del__(self):
+        if self.database is not None:
+            self.loop.run_until_complete(self.database.close())
+        
+        try:
+            self._instances.remove(self)
+        except KeyError:
+            pass
+    
+    
     
     async def connect(self):
+        self.loop = asyncio.get_event_loop()
+        
         self.database = await aiosqlite.connect(f"{self.resources('database')}/GeneralBotData.db")
         self.cursor = await self.database.cursor()
     
@@ -31,7 +45,9 @@ class DatabaseManager:
     async def disconnect_all(cls):
         for instance in list(cls._instances):
             await instance.disconnect()
-            cls._instances.remove(instance)
+            instance.database = None
+        
+        cls._instances.clear()
     
     
     async def execute(self, query, parameters = None):

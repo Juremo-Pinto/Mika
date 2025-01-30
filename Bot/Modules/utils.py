@@ -1,3 +1,4 @@
+import sys
 import zc.lockfile
 
 class Utils:
@@ -8,4 +9,7 @@ class Utils:
             return lock
         except zc.lockfile.LockError:
             return None
-
+    
+    @staticmethod
+    async def has_terminal():
+        return sys.stdout is not None

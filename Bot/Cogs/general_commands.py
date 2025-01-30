@@ -1,6 +1,7 @@
 import asyncio
 import os
 import signal
+import sys
 
 import nextcord
 from nextcord.ext import commands
@@ -15,10 +16,7 @@ class GeneralCommands(commands.Cog):
     
     
     def shutdown_request(self, signal_received, frame):
-        future = asyncio.run_coroutine_threadsafe(self.bot.close(), self.bot.loop)
-        future.result()
-        
-        #sys.exit(0)
+        self.bot.loop.run_until_complete(self.bot.close())
     
     
     @commands.command(name = "desliga")
@@ -55,7 +53,7 @@ class GeneralCommands(commands.Cog):
     
     # Comando de ser xingado ai que triste
     @commands.command(name = "xingamento", aliases = ["si", "se", "vai"])
-    async def pongbop(self, ctx, *, confirm):
+    async def spongbop(self, ctx, *, confirm):
         if confirm in ["mata", "mata mlk", "se fude", "si fude", "sifude", "se foder", "sifuder", "si fuder", "pro caralho", "pra merda", "catar coquinho", "toma no cu"]:
             await ctx.reply("<:spong_bop:1264260742975197264>")
     

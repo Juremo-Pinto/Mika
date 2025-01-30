@@ -1,5 +1,6 @@
 # bot_utilities.py
 
+import os
 import nextcord
 
 class InformationManager:
@@ -12,33 +13,32 @@ class InformationManager:
         """
         self.bot = bot_object
     
+    
     async def fetch_guild_by_name(self, desired_server_name: str) -> nextcord.Guild | None:
         """Returns a server object by its name, returns None if no server is found
-
+        
         Args:
             desired_server_name (str): the server name to search for
-
+        
         Returns:
             Guild: the server object if found
             None: if no server is found
         """
         servers = self.bot.guilds
-
-        print('adquiring the server')
-
+        
         for server in servers:
             if server.name == desired_server_name:
                 return server
-
+        
         return None
-
-
+    
+    
     async def fetch_member_by_name(self, member_name: str) -> nextcord.Member | None:
         """Returns a member object by its name, returns None if no member is found
-
+        
         Args:
             member_name (str): the member name to search for
-
+        
         Returns:
             Member: the member object if found
             None: if no member is found
@@ -46,21 +46,21 @@ class InformationManager:
         servers = self.bot.guilds
         
         for server in servers:
-            memberlist = await server.fetch_members().flatten()
+            member_list = await server.fetch_members().flatten()
             
-            for member in memberlist:
+            for member in member_list:
                 if member.name == member_name:
                     return member
         
         return None
-
-
+    
+    
     async def fetch_member_by_id(self, member_id: int) -> nextcord.Member | None:
         """Returns a member object by its id, returns None if no member is found
-
+        
         Args:
             member_id (int): the member id to search for
-
+        
         Returns:
             Member: the member object if found
             None: if no member is found
@@ -73,3 +73,8 @@ class InformationManager:
                 return member
             
         return None
+    
+    
+    async def get_bot_dev(self):
+        bot_developer_id = os.environ['MINE_DISCORD_ID']
+        return await self.fetch_member_by_id(bot_developer_id)
