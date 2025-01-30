@@ -1,4 +1,7 @@
+import asyncio
 import os
+import signal
+
 import nextcord
 from nextcord.ext import commands
 
@@ -11,6 +14,13 @@ class GeneralCommands(commands.Cog):
         self.resources = ResourcesPath()
     
     
+    def shutdown_request(self, signal_received, frame):
+        future = asyncio.run_coroutine_threadsafe(self.bot.close(), self.bot.loop)
+        future.result()
+        
+        #sys.exit(0)
+    
+    
     @commands.command(name = "desliga")
     async def turn_off_bot(self, ctx):
         if not await PermissionUtils.is_bot_developer(ctx):
@@ -18,6 +28,7 @@ class GeneralCommands(commands.Cog):
         
         await ctx.send("ok tchau")
         await self.bot.close()
+        print('Desligando')
     
     
     @commands.command(name = "repita", aliases = ['repete'])
@@ -27,7 +38,9 @@ class GeneralCommands(commands.Cog):
     
     
     async def getEmojis(self):
-        main_server = await self.bot.fetch_guild(1263933229367562251)
+        bot_test_guild_id = 1263933229367562251
+        
+        main_server = await self.bot.fetch_guild(bot_test_guild_id)
         if main_server:
             emojis = main_server.emojis
         return emojis
@@ -86,4 +99,8 @@ class GeneralCommands(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(GeneralCommands(bot))
+    cog = GeneralCommands(bot)
+    
+    signal.signal(signal.SIGTERM, cog.shutdown_request)
+    
+    bot.add_cog(cog)
