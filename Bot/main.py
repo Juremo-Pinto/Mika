@@ -1,6 +1,7 @@
 # main.py
 
 # general imports
+import asyncio
 import os
 
 # Main package import
@@ -8,11 +9,9 @@ from nextcord import Intents
 from nextcord.ext import commands
 
 # other files import
-from Modules.information_manager import InformationManager
 from Modules.database_manager import DatabaseManager
 from Modules.mischief import Mischief
 from Modules.command_permissions import RolePermissionHandler
-from resources_path import ResourcesPath
 
 #Bot Initialization
 intents = Intents.default()
@@ -23,9 +22,6 @@ intents.members = True
 bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=intents)
 
 # class instantiation
-resources = ResourcesPath()
-info_manager = InformationManager(bot)
-database = DatabaseManager()
 bot_usage_permission = RolePermissionHandler('forbid_BOT')
 
 i_am_afraid = Mischief(bot,
@@ -34,7 +30,6 @@ i_am_afraid = Mischief(bot,
         "Bot Testing Ground",
         "VILA DO CHAVES"
         ],
-    playable_audio_list_path= os.listdir(resources('audio')),
     chance_denominator=100,
     interval_in_seconds = 10
     )
@@ -71,5 +66,13 @@ async def on_message(msg):
     
     await bot.process_commands(msg)
 
+
+async def cleanup():
+    await i_am_afraid.QUIT_HAVING_FUN()
+    await DatabaseManager.disconnect_all()
+
 if __name__ == '__main__':
     bot.run(os.environ['DISCORD_TOKEN'])
+    asyncio.run(cleanup())
+    print("Shutted down lmao")
+    exit()
