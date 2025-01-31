@@ -1,0 +1,1 @@
+directory where the bot will create its caches

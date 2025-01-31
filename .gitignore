@@ -1,4 +1,11 @@
-**/GeneralBotData.db
 **/.vscode
 **/__pycache__
 **/AutismBOT_LOCK
+
+
+Bot/Resources/Database/*
+!Bot/Resources/Database/README.txt
+
+
+Bot/Resources/Cache/*
+!Bot/Resources/Cache/README.txt
