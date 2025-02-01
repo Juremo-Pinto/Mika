@@ -6,17 +6,12 @@ import sys
 import nextcord
 from nextcord.ext import commands
 
-from resources_path import ResourcesPath
+from resources_path import resources_path
 from Modules.command_permissions import PermissionUtils
 
 class GeneralCommands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.resources = ResourcesPath()
-    
-    
-    def shutdown_request(self, signal_received, frame):
-        self.bot.loop.run_until_complete(self.bot.close())
     
     
     @commands.command(name = "desliga")
@@ -60,7 +55,7 @@ class GeneralCommands(commands.Cog):
     
     @commands.command(name = "autista")
     async def sendImage(self, ctx):
-        file = nextcord.File(f"{self.resources('image')}/autismo.jpg", filename="autismo.png")
+        file = nextcord.File(f"{resources_path('image')}/autismo.jpg", filename="autismo.png")
         await ctx.send(file=file)
         await ctx.message.delete()
     
@@ -68,7 +63,7 @@ class GeneralCommands(commands.Cog):
     # Comando de Ajuda
     @commands.command(name = "ayuda", aliases = ['ajuda', 'helpa'])
     async def test(self, ctx, *, args = None):
-        help_text_file_path = os.path.join(self.resources('text'), "Help_message.txt")
+        help_text_file_path = os.path.join(resources_path('text'), "Help_message.txt")
         is_mod = await PermissionUtils.is_moderator(ctx)
         only_mod = args is not None and 'só mod' in args.lower()
         
@@ -97,8 +92,4 @@ class GeneralCommands(commands.Cog):
 
 
 def setup(bot):
-    cog = GeneralCommands(bot)
-    
-    signal.signal(signal.SIGTERM, cog.shutdown_request)
-    
-    bot.add_cog(cog)
+    bot.add_cog(GeneralCommands(bot))

@@ -1,6 +1,6 @@
 import asyncio
 import aiosqlite
-from resources_path import ResourcesPath
+from resources_path import resources_path
 
 #debug_database_path = r"D:\Quase Importante\Codegos\Python\NextCord\AutismoBOT\Bot\Resources\DataBase\GeneralBotData.db"
 
@@ -8,7 +8,6 @@ class DatabaseManager:
     _instances = set()
     
     def __init__(self):
-        self.resources = ResourcesPath()
         self.loop = None
         
         self.database = None
@@ -22,17 +21,14 @@ class DatabaseManager:
         if self.database is not None:
             self.loop.run_until_complete(self.database.close())
         
-        try:
-            self._instances.remove(self)
-        except KeyError:
-            pass
+        self._instances.discard(self)
     
     
     
     async def connect(self):
         self.loop = asyncio.get_event_loop()
         
-        self.database = await aiosqlite.connect(f"{self.resources('database')}/GeneralBotData.db")
+        self.database = await aiosqlite.connect(f"{resources_path('database')}/GeneralBotData.db")
         self.cursor = await self.database.cursor()
     
     

@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from Modules.utils import Utils
 from Modules.information_manager import InformationManager
-from resources_path import ResourcesPath
+from resources_path import resources_path
 
 class Mischief:
     """A considerably small amount of mischief will be caused.
@@ -25,7 +25,6 @@ class Mischief:
         
         self.scheduler_jobs_dict = {}
         self.scheduler = AsyncIOScheduler()
-        self.resources = ResourcesPath()
     
     
     async def commence_moderate_mischief(self):
@@ -69,18 +68,18 @@ class Mischief:
         voice_channels = []
         
         for server in self.servers_with_tomfoolery_present:
-            adquired_server = await self.info.fetch_guild_by_name(server)
+            acquired_server = await self.info.fetch_guild_by_name(server)
             
-            if not any(VcClients.guild.id == adquired_server.id for VcClients in self.bot.voice_clients):
-                voice_channels += adquired_server.voice_channels
+            if not any(VcClients.guild.id == acquired_server.id for VcClients in self.bot.voice_clients):
+                voice_channels += acquired_server.voice_channels
         
         return [voice_channel for voice_channel in voice_channels if len(voice_channel.voice_states) > 0]
     
     
     async def get_random_audio(self):
-        playable_audio_list = os.listdir(self.resources('audio'))
+        playable_audio_list = os.listdir(resources_path('audio'))
         selected_audio = random.choice(playable_audio_list)
-        return os.path.join(self.resources('audio'), selected_audio), selected_audio
+        return os.path.join(resources_path('audio'), selected_audio), selected_audio
     
     
     async def perform_a_minuscule_amount_of_despicable_actions(self):

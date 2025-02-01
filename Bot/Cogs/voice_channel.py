@@ -4,10 +4,12 @@ from nextcord.ext import commands
 
 from Modules.command_permissions import RolePermissionHandler
 
+
+
 class VoiceChatCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.ping_list = []
+        self.ping_list = set()
         
         self.blacklister = RolePermissionHandler("forbid_audio_playback", "forbid_voice_chat_control")
     
@@ -21,8 +23,6 @@ class VoiceChatCommands(commands.Cog):
             if hasattr(ctx.author.voice, 'channel'):
                 await ctx.reply("ok <:cat:1264072257433632789>")
                 await ctx.author.voice.channel.connect()
-                asyncio.run_coroutine_threadsafe(self.keep_connection_alive(ctx.voice_client), self.bot.loop)
-                print(f'Bot has joined the "{ctx.author.voice.channel.name}" voice channel, in')
             else:
                 await ctx.reply("Tenta entrar na call primeiro")
     
@@ -34,25 +34,39 @@ class VoiceChatCommands(commands.Cog):
             return
         
         current_call = ctx.voice_client
+        
         if current_call:
-            self.ping_list.remove(current_call.channel.id)
             await current_call.disconnect()
             await ctx.reply("ok <:cat:1264072257433632789>")
-            print(f'Bot has disconnected on demand from "{current_call.channel.name}", in the "{current_call.channel.guild.name}" guild')
         else:
             await ctx.reply("eu nem to em call uai")
     
     
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        if member == self.bot.user and before.channel and not after.channel and before.channel.id in self.ping_list:
+        if member != self.bot.user:
+            return
+        
+        if before.channel and not after.channel:
             self.ping_list.remove(before.channel.id)
-            print(f'Bot has been forced out of "{before.channel.name}", in the "{before.channel.guild.name}" guild')
+            print(f'Bot has been disconnected from "{before.channel.name}", in "{before.channel.guild.name}"')
+        
+        elif not before.channel and after.channel:
+            await self.new_connection(after.channel.guild.voice_client, after.channel.id)
+            print(f'Bot has joined the "{after.channel.name}" voice channel, in {after.channel.guild.name}')
+        
+        elif before.channel and after.channel and before.channel != after.channel:
+            self.ping_list.remove(before.channel.id)
+            await self.new_connection(after.channel.guild.voice_client, after.channel.id)
+            print(f'Bot has moved from "{before.channel.name}" to "{after.channel.name}", in {after.channel.guild.name}')
+    
+    
+    async def new_connection(self, voice_client, channel_id):
+        self.ping_list.add(channel_id)
+        self.bot.loop.create_task(self.keep_connection_alive(voice_client))
     
     
     async def keep_connection_alive(self, voice_client):
-        self.ping_list.append(voice_client.channel.id)
-        
         while voice_client.channel.id in self.ping_list:
             try:
                 await voice_client.channel.guild.me.edit(nick="Autista")

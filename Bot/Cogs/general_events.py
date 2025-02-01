@@ -1,3 +1,5 @@
+import asyncio
+import signal
 from nextcord.ext import commands
 from Modules.utils import Utils
 from Modules.information_manager import InformationManager
@@ -8,6 +10,11 @@ class GeneralEvents(commands.Cog):
         self.bot = bot
         self.database = DatabaseManager()
         self.info = InformationManager(self.bot)
+    
+    
+    def shutdown_request(self, signal_received, frame):
+        self.bot.loop.create_task(DatabaseManager.disconnect_all())
+        self.bot.loop.create_task(self.bot.close())
     
     
     @commands.Cog.listener()
@@ -52,4 +59,9 @@ class GeneralEvents(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(GeneralEvents(bot))
+    cog = GeneralEvents(bot)
+    
+    signal.signal(signal.SIGTERM, cog.shutdown_request)
+    signal.signal(signal.SIGINT, cog.shutdown_request)
+    
+    bot.add_cog(cog)

@@ -1,12 +1,13 @@
 import asyncio
+import os
 import random
 
-import nextcord
 from nextcord.ext import commands
 
 import yt_dlp
 
-from Cogs.youtube_playback.YTDLConfig import YTDLConfig
+from resources_path import resources_path
+from Modules.cache import JsonCache
 from Cogs.youtube_playback.YTDLSource import YTDLSource
 from Modules.command_permissions import RolePermissionHandler
 
@@ -16,6 +17,9 @@ class youtube_playback(commands.Cog):
         
         self.music_queue = {}
         self.current_music = {}
+        
+        cache_file_path = os.path.join(resources_path('cache'), 'yt-playback_info_cache.json')
+        self.info_cache = JsonCache(cache_file_path, size_limit=50000)
         
         self.role_handler = RolePermissionHandler('forbid_audio_playback', 'forbid_youtube_playback')
     
@@ -43,9 +47,25 @@ class youtube_playback(commands.Cog):
         
         return not voice_client.is_playing() and self.current_music[channel_id] is None
     
+    async def _info_clean(self, info):
+        unwanted_keys = ["formats", "thumbnails", "thumbnail", "automatic_captions", "heatmap", "requested_formats", "subtitles", "description"]
+        
+        for key in unwanted_keys:
+            if key in info:
+                del info[key]
+        
+        return info
     
-    async def song_info_retriever(self, ctx, url):
+    async def get_info_and_cache(self, url):
+        info = await YTDLSource.get_info_from_url(url)
+        self.info_cache.modify(url, await self._info_clean(info=info))
+        return info
+    
+    
+    async def song_info_retriever(self, ctx, url, cache=True):
         try:
+            if cache:
+                return self.info_cache.get(url, bump_to_top=True) or await self.get_info_and_cache(url)
             return await YTDLSource.get_info_from_url(url)
             
         except yt_dlp.DownloadError:
@@ -56,7 +76,6 @@ class youtube_playback(commands.Cog):
             await ctx.message.delete()
         
         return None
-    
     
     
     @commands.command("play", aliases = ["toca"])
@@ -91,7 +110,7 @@ class youtube_playback(commands.Cog):
     
     
     async def handle_playlist(self, ctx, url, is_shuffle):
-        playlist_info = await self.song_info_retriever(ctx, url)
+        playlist_info = await self.song_info_retriever(ctx, url, cache=False)
         await ctx.message.delete()
         
         if playlist_info is None:
@@ -99,6 +118,11 @@ class youtube_playback(commands.Cog):
         
         song_list = playlist_info['entries']
         voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
+        
+        for song in song_list:
+            if not self.info_cache.has(song['url']):
+                self.info_cache.modify(song['url'], song)
+        self.info_cache.reset_keys()
         
         if is_shuffle:
             await ctx.send("embaraiado ainda ó")
@@ -125,7 +149,7 @@ class youtube_playback(commands.Cog):
         
         if await self.is_playback_new(ctx.voice_client):
             self.current_music[voice_channel_id] = song_info
-            asyncio.run_coroutine_threadsafe(self.main_playback_loop(ctx), self.bot.loop)
+            self.bot.loop.create_task(self.main_playback_loop(ctx))
         else:
             self.music_queue[voice_channel_id] += [song_info]
     
@@ -134,16 +158,13 @@ class youtube_playback(commands.Cog):
     async def main_playback_loop(self, ctx):
         voice_channel_id = await self.get_voice_channel_id(ctx.voice_client)
         
-        while True:
-            current_song = self.current_music.get(voice_channel_id)
-            
-            if current_song is not None:
-                await self.play_song(ctx, current_song)
-            
-            if len(self.music_queue[voice_channel_id]) == 0:
-                break
-            
+        current_song = self.current_music.get(voice_channel_id)
+        if current_song is not None:
+            await self.play_song(ctx, current_song)
+        
+        while len(self.music_queue[voice_channel_id]) > 0:
             self.current_music[voice_channel_id] = self.music_queue[voice_channel_id].pop(0)
+            await self.play_song(ctx, self.current_music[voice_channel_id])
         
         self.current_music[voice_channel_id] = None
         await ctx.send("Cabo a fila")

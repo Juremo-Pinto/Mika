@@ -3,11 +3,10 @@
 import os
 import time
 from Modules.utils import Utils
-from resources_path import ResourcesPath
+from resources_path import resources_path
 
 
-path = ResourcesPath()
-NAME = os.path.join(path('lock'), 'AutismBOT_LOCK')
+NAME = os.path.join(resources_path('lock'), 'AutismBOT_LOCK')
 
 lock = Utils.is_duplicate(NAME)
 

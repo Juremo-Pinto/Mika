@@ -1,6 +1,6 @@
 import asyncio
 from nextcord.ext import commands
-from Modules.quick_cache import QuickCache
+from Modules.cache import QuickCache
 from Modules.database_manager import DatabaseManager
 
 from typing import Callable

@@ -1,7 +1,9 @@
 import asyncio
+import os
 from typing import Callable, List, Tuple, Union
 import warnings
 import time
+import json
 
 class QuickCache:
     def __init__(self, filter_keys: Tuple[str, ...] | None = None, max_cache_size: int = None):
@@ -134,11 +136,75 @@ class QuickCache:
         ]
     
     
-    
     async def reset(self):
         # Reset the cache
         self.cache = {}
 
+
+
+class JsonCache:
+    def __init__(self, cache_file_path: str, size_limit = None):
+        self.cache_file_path = cache_file_path
+        
+        self.cache_keys = {}
+        
+        self.size_limit = size_limit
+        self.is_size_capped = size_limit is not None
+        
+        if not os.path.exists(cache_file_path):
+            os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
+            with open(cache_file_path, 'w') as f:
+                json.dump({}, f)
+    
+    def _evaluate_size(self, cache: dict):
+        if self.is_size_capped:
+            while len(cache) > self.size_limit:
+                item_to_remove = next(iter(cache))
+                cache.pop(item_to_remove)
+        
+        return cache
+    
+    def _dump(self, cache, file):
+        file.seek(0)
+        json.dump(cache, file)
+        file.truncate()
+        return file
+    
+    def modify(self, key, value):
+            with open(self.cache_file_path, 'r+') as file:
+                cache = json.load(file)
+                
+                if value:
+                    cache[key] = value
+                else:
+                    del cache[key]
+                
+                cache = self._evaluate_size(cache)
+                self._dump(cache, file)
+    
+    def get(self, key, bump_to_top = False):
+            with open(self.cache_file_path, 'r' if not bump_to_top else 'r+') as file:
+                cache = json.load(file)
+                cache = self._evaluate_size(cache)
+                
+                value = cache.get(key)
+                
+                if value and bump_to_top:
+                    cache[key] = cache.pop(key)
+                    self._dump(cache, file)
+                
+                return value
+    
+    def has(self, key):
+        if not self.cache_keys:
+            with open(self.cache_file_path, 'r') as file:
+                cache = json.load(file)
+                self.cache_keys = list(cache.keys())
+        
+        return key in self.cache_keys
+    
+    def reset_keys(self):
+        self.cache_keys = {}
 
 
 
@@ -147,7 +213,7 @@ async def test():
     i = 0
     while True:
         jogn[i] = i
-
+        
         if len(jogn) > 10:
             b = next(iter(jogn))
             real = jogn.pop(b)
