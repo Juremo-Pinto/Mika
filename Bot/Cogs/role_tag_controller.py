@@ -57,7 +57,7 @@ class RolePermissionController(commands.Cog):
     @commands.command(name="un-permissão-de-cargo")
     async def remove_blacklist(self, ctx):
         pass
-        #amanha eu fasso
+        #amanha eu faço
 
 
 

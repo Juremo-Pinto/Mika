@@ -61,7 +61,7 @@ class GeneralCommands(commands.Cog):
     
     
     # Comando de Ajuda
-    @commands.command(name = "ayuda", aliases = ['ajuda', 'helpa'])
+    @commands.command(name = "ayuda", aliases = ['ajuda', 'helpa', 'help'])
     async def test(self, ctx, *, args = None):
         help_text_file_path = os.path.join(resources_path('text'), "Help_message.txt")
         is_mod = await PermissionUtils.is_moderator(ctx)

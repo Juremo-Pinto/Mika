@@ -35,7 +35,7 @@ intents = Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=intents)
+bot = commands.Bot(command_prefix=['aproveita e ', 'Aproveita e '], intents=intents, help_command= None)
 
 # class instantiation
 bot_usage_permission = RolePermissionHandler('forbid_BOT')

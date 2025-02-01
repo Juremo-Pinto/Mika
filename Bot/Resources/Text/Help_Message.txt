@@ -1,36 +1,53 @@
 # Comandos de Usuário
+
 --NEWMSG--
+
 ## Comandos Gerais
+
 - **<prefix> ayuda**: Mostra esta mensagem de ajuda.
 - **<prefix> repita [qualquer texto]**: Repete a mensagem que você enviar (e deleta a mensagem original).
-- **<prefix> xingamento**: Ele fica triste.
-    - Exemplo: `aproveita e vai catar coquinho`
-    - legal né? uma bosta eu sei (xingamento real também funciona, se bobear)
+- **<prefix> [xingamento]**: Ele fica triste.
+  - Exemplo: `<prefix> vai catar coquinho` (xingamento real também funciona, se bobear)  
 - **<prefix> autista**: cachoro abacaixi.
 - **fat fuck**: fat fuck
+
 --NEWMSG--
+
 ## Comandos de Canal de Voz
-- **<prefix> entra ai**: Junta-se a um canal de voz.
-- **<prefix> vaza**: Sai do canal de voz atual.
+
+- **<prefix> entra ai**: Faz o bot entrar a um canal de voz.
+- **<prefix> vaza**: Faz o bot sair de um canal de voz.
+
 --NEWMSG--
+
 ## Comandos do Bloco de Notas da Comunidade
-- **<prefix> anota pra mim**: Escreve uma nota no bloco de notas da comunidade.
-- **<prefix> mostra as nota**: Mostra as notas.
-- **<prefix> mata**: Deleta notas especificadas.
+
+- **<prefix> anota pra mim [anotação]**: Escreve uma nota no bloco de notas da comunidade.
+- **<prefix> mostra as anotações**: Mostra todas as notas do servidor (com autor).
+- **<prefix> mostra minhas nota**: Mostra apenas suas notas no servidor, numeradas.
+- **<prefix> mata [uma nota ou varias, separado por virgula]**: Deleta notas especificadas pelo numero, refira-se ao comando anterior para saber o numero da nota.
+
 --NEWMSG--
-## Comandos de Deleção de Mensagens em Massa
-- **<prefix> marca**: Marca a mensagem atual para deleção.
-- **<prefix> deleta**: Deleta todas as mensagens marcadas.
---NEWMSG--
+
 ## Comandos de Reprodução do YouTube
-- **<prefix> toca**: Toca uma música ou playlist de uma URL fornecida.
-- **<prefix> skipa**: Pula a música atual ou um número especificado de músicas na fila.
-- **<prefix> diz a fila**: Mostra a música que está tocando ou a fila inteira.
+
+- **<prefix> toca [Link do YouTube] [Parâmetros opcionais]**: Toca uma música ou playlist de uma URL fornecida.
+    - Parâmetro opcional: 'embaraia'  ->  se for uma playlist, embaralha ela *antes de adicionar a fila*
+- **<prefix> pula [Opcional: quantidade]**: Pula a música atual ou um número especificado de músicas na fila.
+- **<prefix> diz o que tá tocando**: Mostra __*a musica que esta sendo reproduzida nesse momento*__ (talvez ou talvez não dê pra usar a parte sublinhada como alternativa ao comando)
+- **<prefix> diz a fila**: Mostra a fila de musica (numerada) até o numero cêm.
 - **<prefix> embaraia**: Embaralha a fila de músicas atual.
 
 --MODERATORCOMMANDS--
 
-# COMANDOS DE ADMIN
+# COMANDOS DE ADMIN (só aparece pra admin ou dono de servidor)
+
+--NEWMSG--
+
+## Comandos de Deleção de Mensagens em Massa
+
+- **<prefix> marca**: Todas as mensagens enviadas no canal a partir desse momento serão marcadas para deleção, até que o comando de deleção seja usado.
+- **<prefix> deleta**: Deleta todas as mensagens que foram marcadas anteriormente no canal.
 
 --NEWMSG--
 
@@ -51,9 +68,9 @@ comandos:
 lista de categorias de permissão:
 - **"forbid_BOT"**  ->  Bloqueia o usuário de usar QUALQUER comando do bot (exceto fat fuck)
 - **"forbid_youtube_playback"**  ->  Impede o uso relacionado a função de musica do bot (com exceção do comando de mostrar a musica atual e a fila)
-- **"forbid_audio_playback"**  ->  Mesma coisa de youtube_playback, porém também impede o usuário de usar comandos de canal de call (entrar e sair)
+- **"forbid_audio_playback"**  ->  Mesma coisa de forbid_youtube_playback, porém também impede o usuário de usar comandos de controle de call (entrar e sair)
 - **"forbid_voice_chat_control"**  ->  Impede apenas o uso de comandos de controle de call (entrar e sair)
 
 comandos:
 - **"<prefix> permissão-de-cargo [cargo] [categoria]"**: Define a categoria de permissão para o cargo especificado.
-- **"<prefix> un-permissão-de-cargo [cargo] [categoria]"**: WIP, Remove a categoria de permissão para o cargo especificado.
+- **"<prefix> un-permissão-de-cargo [cargo] [categoria]"**: __**WIP**__ Remove a categoria de permissão para o cargo especificado.

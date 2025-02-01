@@ -99,7 +99,6 @@ class youtube_playback(commands.Cog):
             await ctx.author.send('"aproveita e entra ai" é o comando pra entrar em call')
     
     
-    
     async def handle_request(self, ctx, url, is_shuffle):
         await self.initialize_dicts(ctx)
         
@@ -107,7 +106,6 @@ class youtube_playback(commands.Cog):
             await self.handle_playlist(ctx, url, is_shuffle)
         else:
             await self.handle_individual(ctx, url)
-    
     
     
     async def handle_playlist(self, ctx, url, is_shuffle):
