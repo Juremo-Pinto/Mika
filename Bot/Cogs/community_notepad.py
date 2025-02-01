@@ -3,6 +3,7 @@ from nextcord.ext import commands
 from Modules.cache import QuickCache
 from Modules.database_manager import DatabaseManager
 
+from unidecode import unidecode
 from typing import Callable
 
 class CommunityNotepad(commands.Cog):
@@ -14,7 +15,7 @@ class CommunityNotepad(commands.Cog):
             'communityNotepad': {
                 'message': 'TEXT',
                 'author_ID': 'INTEGER',
-                'general_ID': 'INTEGER'
+                'server_ID': 'INTEGER'
             }
         })
         asyncio.run(task)
@@ -40,11 +41,11 @@ class CommunityNotepad(commands.Cog):
             await ctx.reply("Mostrar o que, porra")
             return
         
-        match a1.strip():
-            case "as anotações"|"as anotacoes"|"as anotação"|"as anotacao"|"as notas"|"as nota":
+        match unidecode(a1.strip().lower()):
+            case "as anotacoes"|"as anotacao"|"as notas"|"as nota"|"tudo":
                 await self.show_all_notes(ctx)
                 
-            case "minhas anotação"|"as minhas anotação"|"as minha anotação"|"as minhas anotações"|"minhas anotações"|"minhas nota"|"pra mim":
+            case "minhas anotacao"|"as minhas anotacao"|"as minha anotacao"|"as minhas anotacoes"|"minhas anotacoes"|"minhas nota"|"pra mim"|"os meu":
                 await self.show_user_notes(ctx)
                 
             case _:

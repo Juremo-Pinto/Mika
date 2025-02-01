@@ -3,6 +3,7 @@ import os
 import random
 
 from nextcord.ext import commands
+from unidecode import unidecode
 
 import yt_dlp
 
@@ -229,13 +230,13 @@ class youtube_playback(commands.Cog):
         if voice_channel_id is not None:
             await self.initialize_dicts(ctx)
         
-        if msg in ["oq tá tocando", "oq tá tocando", "oq tá tocano", "oq ta tocano", "oq ta tocando", "a musica que esta sendo reproduzida nesse momento", "a musica"]:
+        if unidecode(msg.strip().lower()) in ["oq ta tocando", "oq ta tocano", "a musica que esta sendo reproduzida nesse momento", "a musica", "essa musica"]:
             if voice_channel_id and self.current_music[voice_channel_id]:
                 await ctx.reply(f"**{self.current_music[voice_channel_id]['title']}**")
             else:
                 await ctx.reply("nada")
         
-        elif msg in ["as musica", "todas as musica", "tudo", "a fila", "a lista"]:
+        elif unidecode(msg.strip().lower()) in ["as musica", "todas as musica", "tudo", "a fila", "a lista"]:
             if voice_channel_id and len(self.music_queue[voice_channel_id]) > 0 and self.music_queue[voice_channel_id][0]:
                 await self.compile_messages(ctx, voice_channel_id)
             elif voice_channel_id and self.current_music[voice_channel_id] is not None:

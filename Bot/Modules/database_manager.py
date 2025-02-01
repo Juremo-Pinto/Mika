@@ -2,8 +2,6 @@ import asyncio
 import aiosqlite
 from resources_path import resources_path
 
-#debug_database_path = r"D:\Quase Importante\Codegos\Python\NextCord\AutismoBOT\Bot\Resources\DataBase\GeneralBotData.db"
-
 class DatabaseManager:
     _instances = set()
     
@@ -85,11 +83,12 @@ class DatabaseManager:
         await self.database.commit()
 
 
-
+"""
 async def test(db):
-    await db.connect()
-    #await db.commit('ALTER TABLE blacklistedRoles RENAME TO permissionTaggedRoles')
+    await db.commit('ALTER TABLE communityNotepad RENAME COLUMN general_ID TO server_ID')
+    await db.disconnect()
 
 if __name__ == "__main__":
     db = DatabaseManager()
     asyncio.run(test(db))
+"""
