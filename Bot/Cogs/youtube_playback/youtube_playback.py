@@ -126,7 +126,9 @@ class youtube_playback(commands.Cog):
         self.music_queue[voice_channel_id] += song_list
         
         if await self.is_playback_new(ctx.voice_client):
-            await self.main_playback_loop(ctx)
+            self.bot.loop.create_task(self.main_playback_loop(ctx))
+        else:
+            await ctx.send('Botado na fila (a playlist inteira)')
     
     
     
@@ -147,6 +149,7 @@ class youtube_playback(commands.Cog):
             self.bot.loop.create_task(self.main_playback_loop(ctx))
         else:
             self.music_queue[voice_channel_id] += [song_info]
+            await ctx.send('Botado na fila')
     
     
     
