@@ -1,20 +1,16 @@
 # main.py
 
-import os
-import time
+import os, time
 from Modules.utils import Utils
 from resources_path import resources_path
 
-
 NAME = os.path.join(resources_path('lock'), 'AutismBOT_LOCK')
-
 lock = Utils.is_duplicate(NAME)
 
 if lock is None:
     print(f"Process is a duplicate, exiting...")
     time.sleep(1)
     exit()
-
 
 # general imports
 import asyncio
@@ -51,6 +47,10 @@ i_am_afraid = Mischief(bot,
 
 
 # cog importing
+#bot.load_extension('Modules.command_manipulation.shared_command_system')
+#bot.load_extension('Cogs.test')
+
+bot.load_extension('Cogs.developer_exclusive')
 bot.load_extensions([
     'Cogs.general_commands',
     'Cogs.general_events',
@@ -59,8 +59,10 @@ bot.load_extensions([
     'Cogs.youtube_playback.youtube_playback',
     'Cogs.text_channel_selection',
     'Cogs.mass_message_deletion',
-    'Cogs.role_tag_controller',
+    'Cogs.role_tag_controller'
     ])
+
+
 
 @bot.event
 async def on_ready():

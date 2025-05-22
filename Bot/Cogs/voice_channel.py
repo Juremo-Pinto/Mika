@@ -1,10 +1,8 @@
-import asyncio
-import nextcord
+import asyncio, nextcord
+
 from nextcord.ext import commands
-
-from Modules.command_extension import command_extension
+from Modules.command_manipulation.command_extension import command_extension
 from Modules.command_permissions import role_blacklisted
-
 
 class VoiceChatCommands(commands.Cog):
     def __init__(self, bot):

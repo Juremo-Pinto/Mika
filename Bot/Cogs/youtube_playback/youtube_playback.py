@@ -7,7 +7,7 @@ from unidecode import unidecode
 
 import yt_dlp
 
-from Modules.command_extension import command_extension
+from Modules.command_manipulation.command_extension import command_extension
 from resources_path import resources_path
 from Modules.cache import JsonCache
 from Cogs.youtube_playback.YTDLSource import YTDLSource

@@ -1,7 +1,7 @@
-import asyncio
-import signal
+import asyncio, signal
+
 from nextcord.ext import commands
-from Modules.utils import StringUtils, Utils
+from Modules.utils import StringTools, Utils
 from Modules.information_manager import InformationManager
 from Modules.database_manager import DatabaseManager
 
@@ -26,7 +26,7 @@ class GeneralEvents(commands.Cog):
         elif str.lower(msg.content).startswith(tuple(await self.bot.get_prefix(msg))):
             the_big_forbidden_list_of_bad_words = await Utils.get_the_forbidden_list()
             
-            if any(bad_word in StringUtils.clean(msg.content) for bad_word in the_big_forbidden_list_of_bad_words):
+            if any(bad_word in StringTools.clean(msg.content) for bad_word in the_big_forbidden_list_of_bad_words):
                 await msg.reply("<:spong_bop:1264260742975197264>")
     
     

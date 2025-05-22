@@ -1,7 +1,6 @@
 # bot_utilities.py
 
-import os
-import nextcord
+import os, nextcord
 
 class InformationManager:
     """information related functions for the bot.

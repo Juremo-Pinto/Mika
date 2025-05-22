@@ -1,23 +1,12 @@
-import os
+import os, nextcord
 
-import nextcord
 from nextcord.ext import commands
-
-from Modules.command_extension import command_extension
 from resources_path import resources_path
-from Modules.command_permissions import bot_dev, is_moderator
+from Modules.command_permissions import is_moderator
 
 class GeneralCommands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-    
-    
-    @commands.command(name = "desliga")
-    @bot_dev()
-    async def turn_off_bot(self, ctx):
-        await ctx.send("ok tchau")
-        await self.bot.close()
-        print('Desligando')
     
     
     @commands.command(name = "repita", aliases = ['repete'])

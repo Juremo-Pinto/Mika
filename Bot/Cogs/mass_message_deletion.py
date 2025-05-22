@@ -1,6 +1,6 @@
 import asyncio
-from nextcord.ext import commands
 
+from nextcord.ext import commands
 from Modules.command_permissions import moderator
 
 class MassMessageDeletion(commands.Cog):

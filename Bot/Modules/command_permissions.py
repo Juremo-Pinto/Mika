@@ -1,8 +1,6 @@
-import asyncio
-import functools
-import os
-from typing import Tuple
+import asyncio, functools, os
 
+from typing import Tuple
 from Modules.utils import Utils
 from Modules.database_manager import DatabaseManager
 
@@ -99,7 +97,7 @@ def generic_decorator(check, *args, rejection_message = None, invert = False):
 def moderator(rejection_message: str = None):
     return generic_decorator(is_moderator, rejection_message=rejection_message)
 
-def bot_dev(rejection_message: str = None):
+def developer(rejection_message: str = None):
     return generic_decorator(is_bot_developer, rejection_message=rejection_message)
 
 

@@ -1,7 +1,7 @@
 import nextcord
-from nextcord.ext import commands
 
-from Modules.command_extension import command_extension
+from nextcord.ext import commands
+from Modules.command_manipulation.command_extension import command_extension
 from Modules.information_manager import InformationManager
 from Modules.database_manager import DatabaseManager
 from Modules.command_permissions import is_bot_developer, moderator

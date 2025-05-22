@@ -1,5 +1,5 @@
-import asyncio
-import aiosqlite
+import asyncio, aiosqlite
+
 from resources_path import resources_path
 
 class DatabaseManager:

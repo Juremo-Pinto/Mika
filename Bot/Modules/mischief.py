@@ -1,11 +1,7 @@
 # mischief.py
 
-import os
-import random
+import os, random, nextcord, asyncio
 
-import nextcord
-
-import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from Modules.utils import Utils
@@ -31,9 +27,19 @@ class Mischief:
         """STARTS THE FUN
         """
         print('it starts')
+        await self._setup()
         
         self.scheduler_jobs_dict['theTrollingJob'] = self.scheduler.add_job(self.mischief_interface, 'interval', seconds = self.interval)
         self.scheduler.start()
+    
+    
+    async def _setup(self):
+        servers = []
+        
+        for guild in self.servers_with_tomfoolery_present:
+            servers.append(await self.info.fetch_guild_by_name(guild))
+        
+        self.guilds = servers
     
     
     async def QUIT_HAVING_FUN(self):
@@ -67,11 +73,9 @@ class Mischief:
     async def get_populated_vcs(self):
         voice_channels = []
         
-        for server in self.servers_with_tomfoolery_present:
-            acquired_server = await self.info.fetch_guild_by_name(server)
-            
-            if not any(VcClients.guild.id == acquired_server.id for VcClients in self.bot.voice_clients):
-                voice_channels += acquired_server.voice_channels
+        for guild in self.guilds:
+            if not any(VcClients.guild.id == guild.id for VcClients in self.bot.voice_clients):
+                voice_channels += guild.voice_channels
         
         return [voice_channel for voice_channel in voice_channels if len(voice_channel.voice_states) > 0]
     

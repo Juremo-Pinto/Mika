@@ -1,12 +1,10 @@
 import asyncio
-from nextcord.ext import commands
 
-from Modules.command_extension import command_extension
+from nextcord.ext import commands
+from Modules.command_manipulation.command_extension import command_extension
 from Modules.cache import QuickCache
 from Modules.database_manager import DatabaseManager
-
 from unidecode import unidecode
-from typing import Callable
 
 class CommunityNotepad(commands.Cog):
     def __init__(self, bot: commands.Bot):
