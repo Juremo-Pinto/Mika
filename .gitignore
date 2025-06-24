@@ -1,11 +1,14 @@
+# VsCode and Python stuff
 **/.vscode
 **/__pycache__
-**/AutismBOT_LOCK
 
+#app lock
+*_LOCK
 
+# Databases
 Bot/Resources/Database/*
 !Bot/Resources/Database/README.txt
 
-
+# Cache
 Bot/Resources/Cache/*
 !Bot/Resources/Cache/README.txt

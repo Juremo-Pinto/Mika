@@ -1,13 +1,18 @@
 from discord.ext import commands
+from discord.ext.commands import Context
+
 from Modules.mischief import Mischief
 from Modules.database_manager import DatabaseManager
-from Modules.command_permissions import Permission
+from Modules.command_permissions import Permission, developer
 
 class startup(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        
-        self.fnuuy = Mischief(bot,
+    
+    
+    async def _object_startup(self):
+        self.fnuuy = Mischief(
+            self.bot,
             servers_with_tomfoolery_present= [
                 "Whatsapp 2",
                 "Bot Testing Ground",
@@ -19,9 +24,11 @@ class startup(commands.Cog):
     
     
     async def cog_load(self):
+        await self._object_startup()
+        
         await DatabaseManager.connect()
         print("DatabaseManager: Database has Connected")
-
+        
         await Permission.database_init()
         print("Permission: Permission database has been Setup")
     
@@ -34,6 +41,19 @@ class startup(commands.Cog):
             print(f" - {guild.name} (ID: {guild.id})")
         
         await self.fnuuy.commence_moderate_mischief()
+    
+    
+    @commands.command(name="bot_reload")
+    @developer()
+    async def reload(self, ctx: Context):
+        '''
+        Reloads internal bot components or configurations.
+        
+        Intended for development and debugging purposes. The exact behavior of
+        this command depends on the implementation — it may reload modules,
+        refresh settings, update caches, or apply recent code changes.
+        '''
+        pass
 
 
 async def setup(bot: commands.Bot):

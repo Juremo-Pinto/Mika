@@ -59,8 +59,6 @@ class Mischief:
                 await self.perform_a_minuscule_amount_of_despicable_actions()
         except Exception as e:
             await self.on_error(e)
-        
-        # decided to omit the print stating it didn't happen because it would pollute the output way too much
     
     
     async def on_error(self, error: Exception):
@@ -117,5 +115,5 @@ class Mischief:
         
         await flag.wait()
         
-        await asyncio.sleep(random.uniform(0, 0.6))  
+        await asyncio.sleep(random.uniform(0, 0.2))  
         await vc_bot_client.disconnect()
