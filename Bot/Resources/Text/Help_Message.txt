@@ -5,9 +5,9 @@
 ## Comandos Gerais
 
 - **<prefix> ayuda**: Mostra esta mensagem de ajuda.
-- **<prefix> repita [qualquer texto]**: Repete a mensagem que você enviar (e deleta a mensagem original).
+- **<prefix> repita [qualquer texto]**: Repete a mensagem >que você enviar (e deleta a mensagem original).
 - **<prefix> [xingamento]**: Ele fica triste.
-  - Exemplo: `<prefix> vai catar coquinho` (xingamento real também funciona, se bobear)  
+  - Exemplo: `<prefix> vai catar coquinho`
 - **<prefix> autista**: cachoro abacaixi.
 - **fat fuck**: fat fuck
 
