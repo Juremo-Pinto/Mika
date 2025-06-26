@@ -2,7 +2,7 @@
 
 import json
 import os, random, discord, asyncio
-from typing import Any, Dict, List
+from typing import List
 
 from discord.ext.commands import Bot
 
@@ -95,12 +95,14 @@ class Mischief:
         return [voice_channel for voice_channel in voice_channels if len(voice_channel.voice_states) > 0]
     
     
+    async def get_rare_audio(self):
+        pass
+    
     async def get_random_audio(self):
-        if self.chances["rare_chance"]:
-            pass
-        
-        
-        selected_audio = random.choice(self.regular_audios)
+        if random.uniform(0, 100) <= self.chances["rare_chance"]:
+            selected_audio: str = await self.get_rare_audio()
+        else:
+            selected_audio: str = random.choice(self.regular_audios)
         return os.path.join(resources_path('audio'), selected_audio), selected_audio
     
     
