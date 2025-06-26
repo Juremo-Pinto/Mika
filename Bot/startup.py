@@ -43,7 +43,7 @@ class startup(commands.Cog):
         await self.fnuuy.commence_moderate_mischief()
     
     
-    @commands.command(name="bot_reload")
+    @commands.command(name="reload")
     @developer()
     async def reload(self, ctx: Context):
         '''
@@ -53,7 +53,8 @@ class startup(commands.Cog):
         this command depends on the implementation — it may reload modules,
         refresh settings, update caches, or apply recent code changes.
         '''
-        pass
+        print("Reloading Mischief")
+        self.fnuuy.setup()
 
 
 async def setup(bot: commands.Bot):

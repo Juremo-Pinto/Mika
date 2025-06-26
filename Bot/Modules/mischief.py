@@ -1,12 +1,15 @@
 # mischief.py
 
+import json
 import os, random, discord, asyncio
 from typing import Any, Dict, List
 
+from discord.ext.commands import Bot
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from Modules.utils import Utils
-from Modules.information_manager import InformationManager
+from utils import Utils
+from information_manager import InformationManager
 from resources_path import resources_path
 
 class Mischief:
@@ -15,6 +18,10 @@ class Mischief:
     def __init__(self, bot: discord.Client, *, servers_with_tomfoolery_present: list[str], chance_denominator: int = 100, interval_in_seconds: int = 10):
         self.bot = bot
         self.info = InformationManager(self.bot)
+        
+        self.regular_audio_path: str = os.join(resources_path('audio'), "Regular")
+        self.rare_audio_path: str = os.join(resources_path('audio'), "Rare")
+        self.rare_json_path: str = os.join(self.rare_audio_path, "rare_chance.json")
         
         self.servers_with_tomfoolery_present = servers_with_tomfoolery_present
         self.chance_denominator = chance_denominator
@@ -28,13 +35,13 @@ class Mischief:
         """STARTS THE FUN
         """
         print('Mischief: Initialized the funny lmao xdxd')
-        await self._setup()
+        await self.setup()
         
         self.scheduler_jobs_dict['theTrollingJob'] = self.scheduler.add_job(self.mischief_interface, 'interval', seconds = self.interval)
         self.scheduler.start()
     
     
-    async def _setup(self):
+    async def setup(self):
         servers: List[discord.Guild] = []
         
         for guild in self.servers_with_tomfoolery_present:
@@ -42,8 +49,15 @@ class Mischief:
             
             if found_server is not None:
                 servers.append(found_server)
-        
+                
         self.guilds = servers
+        
+        self.regular_audios = os.listdir(self.regular_audio_path)
+        self.rare_audios = [path for path in os.listdir(self.rare_audio_path) if not path.endswith(".json")]
+        
+        with open(self.rare_json_path, '') as f:
+            self.chances = json.load(f)
+        
     
     
     async def QUIT_HAVING_FUN(self):
@@ -82,8 +96,11 @@ class Mischief:
     
     
     async def get_random_audio(self):
-        playable_audio_list = os.listdir(resources_path('audio'))
-        selected_audio = random.choice(playable_audio_list)
+        if self.chances["rare_chance"]:
+            pass
+        
+        
+        selected_audio = random.choice(self.regular_audios)
         return os.path.join(resources_path('audio'), selected_audio), selected_audio
     
     
@@ -117,3 +134,11 @@ class Mischief:
         
         await asyncio.sleep(random.uniform(0, 0.2))  
         await vc_bot_client.disconnect()
+
+
+if __name__ == "__main__":
+    bot = Bot('test')
+    loki = Mischief(bot)
+    
+    auauaudio = asyncio.run(loki.get_random_audio())
+    pass
