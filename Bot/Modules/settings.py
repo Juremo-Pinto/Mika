@@ -1,4 +1,5 @@
 import os, json, resources_path
+from typing import Any, Dict
 from discord import Enum
 
 
@@ -41,3 +42,21 @@ class Settings(dict):
     def create_settings():
         for setting in SettingType:
             Settings.create_file(f"{setting.name.lower()}.json")
+    
+    
+    def save(self):
+        with open(self.path, "w", encoding='utf-8') as f:
+            json.dump(self, f)
+        
+    def load(self):
+        with open(self.path, "w", encoding='utf-8') as f:
+            self = json.load(f)
+    
+    
+    def setup(self, default_structure = Dict[str, Any]):
+        for key in default_structure:
+            if key not in self:
+                self[key] = default_structure[key]
+        
+        self.save()
+        
