@@ -24,6 +24,8 @@ class DiscordLogger(logging.Logger):
         info = InformationManager(bot)
         cls._bot_dev = await info.get_bot_dev()
     
+    def setFallbackLevel(self, level: int):
+        self.fallback_level = level
     
     def isFallbackEnabledFor(self, level: int):
         return level >= self.fallback_level

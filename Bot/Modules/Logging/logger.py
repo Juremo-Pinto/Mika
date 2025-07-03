@@ -15,7 +15,8 @@ class _logger_set(ReloadableComponent):
         self.config = Settings("debug")
         self.config.setup(default_structure=
             {
-            "log_level": "INFO"
+            "log_level": "INFO",
+            "fallback_level": "ERROR",
             }
         )
         
@@ -33,10 +34,17 @@ class _logger_set(ReloadableComponent):
         log_level_str = self.config.get("log_level")
         log_level_value = getLevelValue(log_level_str)
         logger.setLevel(log_level_value)
-        logger.info(f"Set level to {log_level_str}")
+        logger.info(f"Set logger level to {log_level_str}")
+        
+    def set_fallback_level(self):
+        log_level_str = self.config.get("fallback_level")
+        log_level_value = getLevelValue(log_level_str)
+        logger.setFallbackLevel(log_level_value)
+        logger.info(f"Set fallback level to {log_level_str}")
     
     def reload(self):
         self.set_level()
+        self.set_fallback_level()
 
 
 _log_config = _logger_set()
