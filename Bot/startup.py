@@ -48,7 +48,7 @@ class startup(commands.Cog):
         this command depends on the implementation — it may reload modules,
         refresh settings, update caches, or apply recent code changes.
         '''
-        ctx.author.send("Reloading...")
+        await ctx.author.send("Reloading...")
         
         logger.info("Reloading bot configurations", dev_fallback=True)
         Settings.reload()

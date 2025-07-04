@@ -25,10 +25,10 @@ class Mischief(ReloadableComponent):
     """A considerably small amount of mischief will be caused.
     """
     def __init__(self, bot: Bot):
-        super().__init__()
-        
         self.bot = bot
         self.info_manager = InformationManager(self.bot)
+        
+        self._loop = self.bot.loop
         
         self.settings = Settings("mischief")
         self.settings.setup(
@@ -46,8 +46,9 @@ class Mischief(ReloadableComponent):
         self.scheduler = AsyncIOScheduler()
     
     
-    def reload(self):
-        self.bot.loop.create_task(self.setup())
+    async def reload(self):
+        logger.info("Reloading Mischief")
+        await self.setup()
     
     
     async def commence_moderate_mischief(self):

@@ -1,22 +1,60 @@
+import asyncio
+import functools
 import weakref
-
+import inspect
 
 class ReloadableComponent:
-    _instances = weakref.WeakSet()
+    _instances: weakref.WeakSet["ReloadableComponent"] = weakref.WeakSet()
     
-    def __init__(self):
-        ReloadableComponent._instances.add(self)
+    _loop: asyncio.AbstractEventLoop | None
+    """
+    The event loop used to schedule async load/reload.
+    Must be set by subclasses if using async methods.
+    """
+    
+    def __init__(self, *args, **kwargs):
+        pass
+    
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        _subclass_init = cls.__init__
+        
+        @functools.wraps(_subclass_init)
+        def __init__(self, *args, **kwargs):
+            ReloadableComponent._instances.add(self)
+            self._loop = None
+            _subclass_init(self, *args, **kwargs)
+            self._dispatch_function(self.load)
+        
+        cls.__init__ = __init__
+    
+    
+    def _dispatch_function(self, func):
+        if not inspect.iscoroutinefunction(func):
+            func()
+            return
+        elif self._loop is None:
+            raise RuntimeError(
+            "You must set self._loop to run load/reload asynchronously"
+            )
+        
+        self._loop.create_task(func())
     
     
     def load(self):
         """
-        Abstract method to load necessary resources or perform initialization steps for the module.
+        Called automatically after initialization to perform setup or resource loading.
         
-        This method serves as a contract for subclasses, ensuring that any component
-        inheriting from ReloadableComponent implements its own loading logic. It is
-        called to initialize or set up resources required by the module.
+        This method is intended to be overridden by subclasses to define any setup,
+        resource allocation, or initialization logic required by the component.
+        It is automatically called at the end of the component's __init__ method,
+        so subclasses do not need to call it manually.
         
-        Subclasses may override this method to define specific loading behavior.
+        If this method is implemented as an async coroutine, 
+        **self._loop must be set to a valid asyncio event loop before this method is called**.
+        Failure to set self._loop will result in errors or unexpected behavior.
+        
+        Override this method to implement custom loading behavior for your component.
         """
         pass
     
@@ -25,13 +63,14 @@ class ReloadableComponent:
         """
         Reloads the module or component.
         
-        This method is intended to be overridden by subclasses to implement custom
+        This method **must** be overridden by subclasses to implement custom
         reload logic when the bot is reloaded. It is called automatically during
         the bot's reload process to allow for resource cleanup, reinitialization,
         or other necessary updates.
         
-        Override this method to define specific behavior that should occur when
-        the bot reloads this module.
+        If this method is implemented as an async coroutine, 
+        **self._loop must be set to a valid asyncio event loop before this method is called**.
+        Failure to set self._loop will result in errors or unexpected behavior.
         
         Raises:
             NotImplementedError: If the method is not overridden in a subclass.
@@ -41,5 +80,11 @@ class ReloadableComponent:
     
     @classmethod
     def reload_all_instances(cls):
+        """Attempts to reload all instances of ReloadableComponent
+        """
         for instance in cls._instances:
-            instance.reload()
+            try:
+                instance._dispatch_function(instance.reload)
+            except RuntimeError as e:
+                print(f"[[WARNING]]: Failed to reload {instance.__class__.__name__} — REASON: {e}")
+                print(e)

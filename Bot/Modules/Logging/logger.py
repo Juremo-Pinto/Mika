@@ -5,20 +5,16 @@ from Modules.Logging.formatter import DiscordStyleFormatter
 from Modules.Logging.discord_logger import DiscordLogger, getLevelValue
 
 
-logger = DiscordLogger("AutismBOT", logging.NOTSET, logging.ERROR)
+logger = DiscordLogger("AutismBOT", logging.NOTSET, logging.NOTSET)
 """Global logger instance"""
 
 class _logger_set(ReloadableComponent):
     def __init__(self):
-        super().__init__()
-        
         self.config = Settings("debug")
         self.config.setup(       
             log_level = "INFO",
             fallback_level = "ERROR",
         )
-        
-        self.load()
     
     def load(self):
         _handler = logging.StreamHandler()
@@ -26,7 +22,9 @@ class _logger_set(ReloadableComponent):
         _handler.setFormatter(_formatter)
         
         logger.addHandler(_handler)
+        
         self.set_level()
+        self.set_fallback_level()
     
     def set_level(self):
         log_level_str = self.config.get("log_level")
