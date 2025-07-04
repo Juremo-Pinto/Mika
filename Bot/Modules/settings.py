@@ -63,11 +63,10 @@ class Settings(Mapping):
             self._data = json.load(f)
     
     
-    def setup(self, default_structure = Dict[str, Any]):
+    def setup(self, **default_structure):
         self.load()
         
-        for key in default_structure:
-            if key not in self._data:
-                self._data[key] = default_structure[key]
+        for key, value in default_structure.items():
+            self._data.setdefault(key, value)
         
         self.save()

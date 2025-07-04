@@ -31,18 +31,16 @@ class Mischief(ReloadableComponent):
         self.info_manager = InformationManager(self.bot)
         
         self.settings = Settings("mischief")
-        self.settings.setup(default_structure=
-            {
-                "guilds":
-                    [
+        self.settings.setup(
+                guilds = [
                         "Whatsapp 2",
                         "Bot Testing Ground",
-                        "VILA DO CHAVES"
+                        "VILA DO CHAVES",
                     ],
-                "chance_percentage": 1,
-                "interval_seconds": 10
+                chance_percentage = 1,
+                interval_seconds = 10
             }
-        )
+        
         
         self.mischief_job_registry: List[MischiefJob] = []
         self.scheduler = AsyncIOScheduler()
