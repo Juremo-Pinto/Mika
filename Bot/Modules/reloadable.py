@@ -9,7 +9,6 @@ class ReloadableComponent:
     _loop: asyncio.AbstractEventLoop | None
     """
     The event loop used to schedule async load/reload.
-    Must be set by subclasses if using async methods.
     """
     
     def __init__(self, *args, **kwargs):
@@ -22,7 +21,9 @@ class ReloadableComponent:
         @functools.wraps(_subclass_init)
         def __init__(self, *args, **kwargs):
             ReloadableComponent._instances.add(self)
+            
             self._loop = None
+            
             _subclass_init(self, *args, **kwargs)
             self._dispatch_function(self.load)
         
@@ -31,12 +32,15 @@ class ReloadableComponent:
     
     def _dispatch_function(self, func):
         if not inspect.iscoroutinefunction(func):
-            func()
-            return
-        elif self._loop is None:
-            raise RuntimeError(
-            "You must set self._loop to run load/reload asynchronously"
-            )
+            return func()
+        
+        if self._loop is None:
+            try: 
+                self._loop = asyncio.get_running_loop()
+            except RuntimeError:
+                raise RuntimeError(
+                "There is no loop present in this thread, you should pass self._loop manually"
+                )
         
         self._loop.create_task(func())
     
