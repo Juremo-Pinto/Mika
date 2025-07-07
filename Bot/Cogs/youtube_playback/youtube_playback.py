@@ -11,7 +11,7 @@ from Modules.Logging.logger import logger
 from Modules.command_manipulation.command_extension import command_extension
 from Modules.cache import JsonCache
 from Cogs.youtube_playback.YTDLSource import YTDLSource
-from Cogs.youtube_playback.YTUtils import YTUtils
+from Cogs.youtube_playback.YTUtils import *
 from Modules.command_permissions import role_blacklisted
 
 class youtube_playback(commands.Cog):
@@ -28,19 +28,19 @@ class youtube_playback(commands.Cog):
         logger.info(f"Cog Loaded: {self.__cog_name__}")
     
     async def _initialize_dicts(self, ctx: Context):
-        voice_channel_id = await YTUtils.get_voice_channel_id(ctx.voice_client)
+        voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         self.music_queue.setdefault(voice_channel_id, [])
         self.current_music.setdefault(voice_channel_id, None)
     
     async def _is_playback_new(self, voice_client: VoiceClient):
-        channel_id = await YTUtils.get_voice_channel_id(voice_client)
+        channel_id = await get_voice_channel_id(voice_client)
         
         return not voice_client.is_playing() and self.current_music[channel_id] is None
     
     async def _get_info_and_cache(self, url: str):
         info = await YTDLSource.get_info_from_url(url)
-        self.info_cache.modify(url, await YTUtils.clean_info(info=info))
+        self.info_cache.modify(url, await clean_info(info=info))
         return info
     
     async def _song_info_retriever(self, ctx: Context, url: str, cache: bool = True):
@@ -70,7 +70,7 @@ class youtube_playback(commands.Cog):
         
         command_list = query.split()
         
-        is_shuffle = await YTUtils.is_shuffle(command_list) if len(command_list) > 1 else False
+        is_shuffle = await is_shuffle(command_list) if len(command_list) > 1 else False
         url = command_list[0]
         
         await ctx.reply("Belezura, calma ae")
@@ -80,7 +80,7 @@ class youtube_playback(commands.Cog):
     async def _handle_request(self, ctx: Context, url: str, is_shuffle: bool):
         await self._initialize_dicts(ctx)
         
-        if await YTUtils.is_playlist(url):
+        if await is_playlist(url):
             await self._handle_playlist(ctx, url, is_shuffle)
         else:
             await self._handle_individual(ctx, url)
@@ -94,7 +94,7 @@ class youtube_playback(commands.Cog):
             return
         
         song_list = playlist_info['entries']
-        voice_channel_id = await YTUtils.get_voice_channel_id(ctx.voice_client)
+        voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         for song in song_list:
             if not self.info_cache.has(song['url']):
@@ -115,7 +115,7 @@ class youtube_playback(commands.Cog):
     
     
     async def _handle_individual(self, ctx: Context, url: str):
-        filtered_url = await YTUtils.remove_url_parameters(url)
+        filtered_url = await remove_url_parameters(url)
         song_info = await self._song_info_retriever(ctx, filtered_url)
         
         if song_info is None:
@@ -124,7 +124,7 @@ class youtube_playback(commands.Cog):
         song_info['url'] = filtered_url
         await ctx.message.delete()
         
-        voice_channel_id = await YTUtils.get_voice_channel_id(ctx.voice_client)
+        voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         if await self._is_playback_new(ctx.voice_client):
             self.current_music[voice_channel_id] = song_info
@@ -136,7 +136,7 @@ class youtube_playback(commands.Cog):
     
     
     async def _main_playback_loop(self, ctx: Context):
-        voice_channel_id = await YTUtils.get_voice_channel_id(ctx.voice_client)
+        voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         current_song = self.current_music.get(voice_channel_id)
         if current_song is not None:
@@ -177,7 +177,7 @@ class youtube_playback(commands.Cog):
     @role_blacklisted('forbid_audio_playback', 'forbid_youtube_playback', rejection_message= "Tu tá BANIDO de musicar")
     async def skip(self, ctx: Context, amount: str | None = None):
         voice_client = ctx.voice_client
-        voice_channel_id = await YTUtils.get_voice_channel_id(voice_client)
+        voice_channel_id = await get_voice_channel_id(voice_client)
         
         if amount is None or not isinstance(amount, (int, str)) or (isinstance(amount, int) and amount <= 0):
             amount = 1
@@ -209,7 +209,7 @@ class youtube_playback(commands.Cog):
     @command_extension('a fila', 'as musica')
     @role_blacklisted('forbid_audio_playback', 'forbid_youtube_playback', rejection_message= "Tu tá BANIDO de musicar")
     async def clear_queue(self, ctx: Context):
-        channel_id = await YTUtils.get_voice_channel_id(ctx.voice_client)
+        channel_id = await get_voice_channel_id(ctx.voice_client)
         
         if not channel_id:
             await ctx.reply('Oque, porra')
@@ -221,7 +221,7 @@ class youtube_playback(commands.Cog):
     
     @commands.command("playing", aliases = ["diz", "fala"])
     async def playing(self, ctx: Context, *, msg: str):
-        voice_channel_id = await YTUtils.get_voice_channel_id(ctx.voice_client)
+        voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         if voice_channel_id is not None:
             await self._initialize_dicts(ctx)
@@ -269,7 +269,7 @@ class youtube_playback(commands.Cog):
         'forbid_audio_playback', 'forbid_youtube_playback',
         rejection_message= "Tu tá BANIDO de musicar")
     async def shuffle_list(self, ctx: Context):
-        voice_channel_id = await YTUtils.get_voice_channel_id(ctx.voice_client)
+        voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         if voice_channel_id in self.music_queue and len(self.music_queue[voice_channel_id]) > 0:
             random.shuffle(self.music_queue[voice_channel_id])

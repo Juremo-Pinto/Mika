@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Self
 from discord import AudioSource, PCMVolumeTransformer, FFmpegPCMAudio
 
 from concurrent.futures import ThreadPoolExecutor
-from Cogs.youtube_playback.YTDLConfig import YTDLConfig
+from Cogs.youtube_playback.YTDLConfig import *
 
 from yt_dlp import YoutubeDL
 
@@ -37,16 +37,16 @@ class YTDLSource(PCMVolumeTransformer):
     async def stream_from_url(cls, url: str, *, timeout: int = 30, loop: Optional[asyncio.AbstractEventLoop] = None) -> Self:
         loop = loop or asyncio.get_event_loop()
         
-        data = await cls.wait_for_extraction(loop, YTDLConfig.yt_downloader, url=url, download=False, timeout=timeout)
+        data = await cls.wait_for_extraction(loop, yt_downloader, url=url, download=False, timeout=timeout)
         filename: str = data['url']
         
-        return cls(FFmpegPCMAudio(filename, **YTDLConfig.ffmpeg_format_options), data=data)
+        return cls(FFmpegPCMAudio(filename, **ffmpeg_format_options), data=data)
     
     
     @classmethod
     async def get_info_from_url(cls, url: str, *, timeout: int = 15, loop: Optional[asyncio.AbstractEventLoop] = None) -> Dict[str, Any]:
         loop = loop or asyncio.get_event_loop()
         
-        info: Dict[str, Any] = await cls.wait_for_extraction(loop, YTDLConfig.yt_info_extractor, url=url, download=False, timeout=timeout)
+        info: Dict[str, Any] = await cls.wait_for_extraction(loop, yt_info_extractor, url=url, download=False, timeout=timeout)
         
         return info
