@@ -25,8 +25,8 @@ class YTDLSource(PCMVolumeTransformer):
         return extractor.extract_info(url, download=download)
     
     
-    @classmethod
-    async def wait_for_extraction(cls, loop: asyncio.AbstractEventLoop, extractor: YoutubeDL, url: str, download: bool, timeout: int):
+    @staticmethod
+    async def wait_for_extraction(loop: asyncio.AbstractEventLoop, extractor: YoutubeDL, url: str, download: bool, timeout: int):
         return await asyncio.wait_for(
             loop.run_in_executor(THREAD_EXECUTOR , YTDLSource.extract, extractor, url, download),
             timeout=timeout

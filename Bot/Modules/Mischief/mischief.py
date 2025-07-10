@@ -48,19 +48,17 @@ class Mischief(ReloadableComponent):
     
     async def reload(self):
         logger.info("Reloading Mischief")
-        await self.setup()
+        await self.load()
     
     
     async def commence_moderate_mischief(self):
         """STARTS THE FUN
         """
-        logger.info('Mischief: Initialized the funny lmao xdxd')
-        await self.setup()
-        
+        logger.info('Mischief: Initialized the funny lmao xdxd')  
         self.scheduler.start()
     
     
-    async def setup(self):
+    async def load(self):
         self.mischief_job_registry.clear()
         self.scheduler.remove_all_jobs()
         
@@ -85,14 +83,16 @@ class Mischief(ReloadableComponent):
     
     @staticmethod
     def create_chance_json():
+        default_structure = {
+            "rare_chance_percentage": 5,
+            
+            "default_generated_chance": 10,
+            "individual_audio_chance": {
+            } 
+        }
+        
+        os.makedirs(RARE_AUDIO_PATH, exist_ok=True)
         with open(JSON_CHANCE_PATH, 'x') as f:
-            default_structure = {
-                "rare_chance_percentage": 5,
-                
-                "default_generated_chance": 10,
-                "individual_audio_chance": {
-                } 
-            }
             json.dump(default_structure, f, indent=4)
     
     
@@ -125,8 +125,15 @@ class Mischief(ReloadableComponent):
     
     
     async def load_json(self):
-        with open(JSON_CHANCE_PATH, 'r') as f:
-            self.chances = json.load(f)
+        try:
+            with open(JSON_CHANCE_PATH, 'r') as f:
+                self.chances: Dict[str, int] = json.load(f)
+        except json.JSONDecodeError:
+            logger.error("Json Rare Chances had problems decoding")
+            await self.save_json()
+        except FileNotFoundError:
+            logger.error("Json Rare Chances didnt exists")
+            await self.create_chance_json()
     
     
     async def fill_json_default_songs(self):
@@ -166,7 +173,7 @@ class Mischief(ReloadableComponent):
     async def get_random_audio(self):
         random_value = random.uniform(0, 100)
         logger.debug(f"Mischief: Random value for rare audio selection: {random_value}")
-        if random_value < self.chances["rare_chance_percentage"]:
+        if random_value < self.chances.get("rare_chance_percentage", default = 1):
             audio_path, name = await self.get_rare_audio()
         else:
             audio_path, name = await self.get_regular_audio()

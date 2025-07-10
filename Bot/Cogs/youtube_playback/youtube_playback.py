@@ -16,13 +16,13 @@ from Modules.command_permissions import role_blacklisted
 
 class youtube_playback(commands.Cog):
     def __init__(self, bot: Bot):
-        self.bot = bot
+        self._bot = bot
         
-        self.music_queue: Dict[int, List[str]] = {}
-        self.current_music: Dict[int, str] = {}
+        self._music_queue: Dict[int, List[str]] = {}
+        self._current_music: Dict[int, str] = {}
         
         cache_file_path = os.path.join(resources_path.CACHE, 'yt-playback_info_cache.json')
-        self.info_cache = JsonCache(cache_file_path, size_limit=50000)
+        self._info_cache = JsonCache(cache_file_path, size_limit=50000)
     
     async def cog_load(self):
         logger.info(f"Cog Loaded: {self.__cog_name__}")
@@ -30,23 +30,23 @@ class youtube_playback(commands.Cog):
     async def _initialize_dicts(self, ctx: Context):
         voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
-        self.music_queue.setdefault(voice_channel_id, [])
-        self.current_music.setdefault(voice_channel_id, None)
+        self._music_queue.setdefault(voice_channel_id, [])
+        self._current_music.setdefault(voice_channel_id, None)
     
     async def _is_playback_new(self, voice_client: VoiceClient):
         channel_id = await get_voice_channel_id(voice_client)
         
-        return not voice_client.is_playing() and self.current_music[channel_id] is None
+        return not voice_client.is_playing() and self._current_music[channel_id] is None
     
     async def _get_info_and_cache(self, url: str):
         info = await YTDLSource.get_info_from_url(url)
-        self.info_cache.modify(url, await clean_info(info=info))
+        self._info_cache.modify(url, await clean_info(info=info))
         return info
     
     async def _song_info_retriever(self, ctx: Context, url: str, cache: bool = True):
         try:
             if cache:
-                return self.info_cache.get(url, bump_to_top=True) or await self._get_info_and_cache(url)
+                return self._info_cache.get(url, bump_to_top=True) or await self._get_info_and_cache(url)
             return await YTDLSource.get_info_from_url(url)
             
         except yt_dlp.DownloadError:
@@ -97,18 +97,18 @@ class youtube_playback(commands.Cog):
         voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         for song in song_list:
-            if not self.info_cache.has(song['url']):
-                self.info_cache.modify(song['url'], song)
-        self.info_cache.reset_keys()
+            if not self._info_cache.has(song['url']):
+                self._info_cache.modify(song['url'], song)
+        self._info_cache.reset_keys()
         
         if is_shuffle:
             await ctx.send("embaraiado ainda ó")
             random.shuffle(song_list)
         
-        self.music_queue[voice_channel_id] += song_list
+        self._music_queue[voice_channel_id] += song_list
         
         if await self._is_playback_new(ctx.voice_client):
-            self.bot.loop.create_task(self._main_playback_loop(ctx))
+            self._bot.loop.create_task(self._main_playback_loop(ctx))
         else:
             await ctx.send('Botado na fila (a playlist inteira)')
     
@@ -127,10 +127,10 @@ class youtube_playback(commands.Cog):
         voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
         if await self._is_playback_new(ctx.voice_client):
-            self.current_music[voice_channel_id] = song_info
-            self.bot.loop.create_task(self._main_playback_loop(ctx))
+            self._current_music[voice_channel_id] = song_info
+            self._bot.loop.create_task(self._main_playback_loop(ctx))
         else:
-            self.music_queue[voice_channel_id] += [song_info]
+            self._music_queue[voice_channel_id] += [song_info]
             await ctx.send('Botado na fila')
     
     
@@ -138,15 +138,15 @@ class youtube_playback(commands.Cog):
     async def _main_playback_loop(self, ctx: Context):
         voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
-        current_song = self.current_music.get(voice_channel_id)
+        current_song = self._current_music.get(voice_channel_id)
         if current_song is not None:
             await self._play_song(ctx, current_song)
         
-        while len(self.music_queue[voice_channel_id]) > 0:
-            self.current_music[voice_channel_id] = self.music_queue[voice_channel_id].pop(0)
-            await self._play_song(ctx, self.current_music[voice_channel_id])
+        while len(self._music_queue[voice_channel_id]) > 0:
+            self._current_music[voice_channel_id] = self._music_queue[voice_channel_id].pop(0)
+            await self._play_song(ctx, self._current_music[voice_channel_id])
         
-        self.current_music[voice_channel_id] = None
+        self._current_music[voice_channel_id] = None
         await ctx.send("Cabo a fila")
     
     
@@ -154,7 +154,7 @@ class youtube_playback(commands.Cog):
     async def _play_song(self, ctx: Context, url: str):
         try:          
             async with ctx.typing():
-                playable_song_object = await YTDLSource.stream_from_url(url['url'], loop= self.bot.loop)
+                playable_song_object = await YTDLSource.stream_from_url(url['url'], loop= self._bot.loop)
             
             if not ctx.voice_client:
                 return
@@ -162,11 +162,9 @@ class youtube_playback(commands.Cog):
             finished = asyncio.Event()
             
             ctx.voice_client.play(playable_song_object, after= lambda e: finished.set())
+            
             await ctx.send(f"Tocando: **{url['title']}**")
-            
             await finished.wait()
-            
-            print("Teste")
         
         except (yt_dlp.utils.DownloadError, asyncio.TimeoutError):
             await ctx.send("Deu ruim, proxima música")
@@ -187,12 +185,12 @@ class youtube_playback(commands.Cog):
             
             if isinstance(amount, str) and amount.strip().lower() in ['tudo', 'all', 'todos', 'todes']:
                 await self._skip_all(ctx, voice_channel_id)
-            elif amount > 1 and len(self.music_queue[voice_channel_id]) >= amount:
-                del self.music_queue[voice_channel_id][:amount - 1]
+            elif amount > 1 and len(self._music_queue[voice_channel_id]) >= amount:
+                del self._music_queue[voice_channel_id][:amount - 1]
                 await ctx.reply("tá")
             elif amount > 1:
                 await ctx.send("Como que skipa um numero maior que a fila porra")
-                await ctx.send(f"(Nota: a fila tem {len(self.music_queue[voice_channel_id]) + 1} musicas)")
+                await ctx.send(f"(Nota: a fila tem {len(self._music_queue[voice_channel_id]) + 1} musicas)")
                 return
             
             voice_client.stop()
@@ -200,8 +198,8 @@ class youtube_playback(commands.Cog):
             await ctx.reply("Oque, porra")
     
     async def _skip_all(self, ctx: Context, channel_id: int):
-            self.music_queue[channel_id] = []
-            self.current_music[channel_id] = None
+            self._music_queue[channel_id] = []
+            self._current_music[channel_id] = None
             await ctx.reply("Oloco tabão")
     
     
@@ -215,7 +213,7 @@ class youtube_playback(commands.Cog):
             await ctx.reply('Oque, porra')
             return
         
-        self.music_queue[channel_id] = []
+        self._music_queue[channel_id] = []
         await ctx.send('ok')
     
     
@@ -227,30 +225,30 @@ class youtube_playback(commands.Cog):
             await self._initialize_dicts(ctx)
         
         if unidecode(msg.strip().lower()) in ["oq ta tocando", "oq ta tocano", "a musica que esta sendo reproduzida nesse momento", "a musica", "essa musica"]:
-            if voice_channel_id and self.current_music[voice_channel_id]:
-                await ctx.reply(f"**{self.current_music[voice_channel_id]['title']}**")
+            if voice_channel_id and self._current_music[voice_channel_id]:
+                await ctx.reply(f"**{self._current_music[voice_channel_id]['title']}**")
             else:
                 await ctx.reply("nada")
         
         elif unidecode(msg.strip().lower()) in ["as musica", "todas as musica", "tudo", "a fila", "a lista"]:
-            if voice_channel_id and len(self.music_queue[voice_channel_id]) > 0 and self.music_queue[voice_channel_id][0]:
+            if voice_channel_id and len(self._music_queue[voice_channel_id]) > 0 and self._music_queue[voice_channel_id][0]:
                 await self._compile_messages(ctx, voice_channel_id)
-            elif voice_channel_id and self.current_music[voice_channel_id] is not None:
-                await ctx.send(f"1 - **{self.current_music[voice_channel_id]['title']}**")
+            elif voice_channel_id and self._current_music[voice_channel_id] is not None:
+                await ctx.send(f"1 - **{self._current_music[voice_channel_id]['title']}**")
             else:
                 await ctx.reply("a fila ta vazia fi")
     
     
     async def _compile_messages(self, ctx: Context, voice_channel_id: int):
-        message = f"1 - **{self.current_music[voice_channel_id]['title']}**\n"
+        message = f"1 - **{self._current_music[voice_channel_id]['title']}**\n"
         
         song_placement = 2
         
-        for song in self.music_queue[voice_channel_id]:
+        for song in self._music_queue[voice_channel_id]:
             song_message = f"{song_placement} - {song['title']}\n"
             
             if song_placement > 100:
-                message += f"*+ {(len(self.music_queue[voice_channel_id]) - song_placement) + 2} outras...*"
+                message += f"*+ {(len(self._music_queue[voice_channel_id]) - song_placement) + 2} outras...*"
                 break
             
             if len(message) + len(song_message) > 2000:
@@ -271,8 +269,8 @@ class youtube_playback(commands.Cog):
     async def shuffle_list(self, ctx: Context):
         voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         
-        if voice_channel_id in self.music_queue and len(self.music_queue[voice_channel_id]) > 0:
-            random.shuffle(self.music_queue[voice_channel_id])
+        if voice_channel_id in self._music_queue and len(self._music_queue[voice_channel_id]) > 0:
+            random.shuffle(self._music_queue[voice_channel_id])
             await ctx.reply("Ok tá bem aleatório")
         
         else:
@@ -281,9 +279,9 @@ class youtube_playback(commands.Cog):
     
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: Member, before: VoiceClient | None, after: VoiceClient | None):
-        if member == self.bot.user and before.channel and not after.channel:
-            self.music_queue[before.channel.id] = []
-            self.current_music[before.channel.id] = None
+        if member == self._bot.user and before.channel and not after.channel:
+            self._music_queue[before.channel.id] = []
+            self._current_music[before.channel.id] = None
 
 
 async def setup(bot: Bot):

@@ -27,12 +27,12 @@ class BotClient(Bot):
         self.dev_user = await self.info_manager.get_bot_dev()
         
         await self.load_extension('startup')
-        await self.load_extension('Cogs.developer_exclusive')
         
         #await bot.load_extension('Modules.command_manipulation.shared_command_system')
         #await bot.load_extension('Cogs.test')
         
         await self.load_extensions(
+            'Cogs.developer_exclusive',
             'Cogs.general_commands',
             'Cogs.general_events',
             'Cogs.voice_channel',

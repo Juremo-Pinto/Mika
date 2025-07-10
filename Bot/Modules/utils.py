@@ -64,8 +64,8 @@ class StringTools:
         return unidecode(msg.lower().strip())
 
 
-S = TypeVar("S")
 
+S = TypeVar("S")
 class IterTools:
     @staticmethod
     def for_each_item(item_list: Iterable[S], *actions: Callable[[S], S]) -> List[S]:
