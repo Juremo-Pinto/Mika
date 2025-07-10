@@ -88,10 +88,8 @@ class BotClient(Bot):
     
     
     def register_signal_handlers(self):
-        loop = asyncio.get_running_loop()
-        
         def handler(sig, frame):
-            loop.create_task(self.close())
+            self.loop.create_task(self.close())
         
         signal.signal(signal.SIGINT, handler)
         signal.signal(signal.SIGTERM, handler)
