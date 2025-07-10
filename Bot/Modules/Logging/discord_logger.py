@@ -3,7 +3,7 @@ from discord.ext.commands import Bot
 
 from Modules.information_manager import InformationManager
 from Modules.utils import Utils
-from formatter import DiscordStyleFormatter
+from Modules.Logging.formatter import DiscordStyleFormatter
 
 import logging
 
