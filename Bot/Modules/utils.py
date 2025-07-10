@@ -34,11 +34,33 @@ class StringTools:
         return [string.split(sep) for string in iter]
     
     @staticmethod
-    def clean_all(iter: Iterable[str]):
+    def clean_all(iter: Iterable[str]) -> List[str]:
+        """Performs StringTools.clean in a Iterable of strings
+
+        Args:
+            iter (Iterable[str]): Strings to be cleaned
+
+        Returns:
+            List[str]: List of cleaned strings
+        """
         return [StringTools.clean(msg) for msg in iter]
     
     @staticmethod
     def clean(msg: str):
+        """
+        Cleans a string by removing cursed characters and normalizing it for comparison.
+
+        This method performs the following operations on the input string:
+        - Converts to lowercase
+        - Strips leading and trailing whitespace
+        - Transliterates Unicode characters to their closest ASCII equivalents (e.g., 'é' → 'e')
+
+        Parameters:
+            msg (str): The input string to be cleaned.
+
+        Returns:
+            str: The cleaned, lowercase, ASCII-only version of the input string.
+        """
         return unidecode(msg.lower().strip())
 
 

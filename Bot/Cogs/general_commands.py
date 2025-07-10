@@ -1,6 +1,10 @@
 import os, discord, resources_path
+from typing import List
 
 from discord.ext import commands
+from discord.ext.commands import Context
+
+from Modules.utils import StringTools
 from Modules.command_permissions import is_moderator
 from Modules.Logging.logger import logger
 
@@ -43,25 +47,30 @@ class GeneralCommands(commands.Cog):
     
     # Comando de Ajuda
     @commands.command(name = "ayuda", aliases = ['ajuda', 'helpa', 'help'])
-    async def test(self, ctx, *, args = None):
-        help_text_file_path = os.path.join(resources_path.TEXTS, "Help_message.txt")
-        is_mod = await is_moderator(ctx)
-        only_mod = args is not None and 'só mod' in args.lower()
+    async def help_command(self, ctx: Context, *, args = None):
+        reply_messages = await self.get_help_messages(ctx, args)
         
-        with open(help_text_file_path, encoding='UTF-8') as f:
+        for message in reply_messages:
+            if len(message) != 0:
+                await ctx.author.send(message)
+    
+    
+    HELP_TEXT_PATH = os.path.join(resources_path.TEXTS, "Help_message.txt")
+    async def get_help_messages(self, ctx: Context, args) -> List[str]:
+        help_text = await self.get_help_text(ctx, args)
+        help_text = help_text.replace('<prefix> ', (await self.bot.get_prefix(ctx))[0])
+        help_text = help_text.split('--NEWMSG--')
+        
+        return help_text
+    
+    
+    async def get_help_text(self, ctx: Context, args) -> str:
+        with open(self.HELP_TEXT_PATH, encoding='UTF-8') as f:
             help_text = f.read()
-            help_text = await self.get_help_text(help_text, is_mod, only_mod)
-            help_text = help_text.replace('<prefix> ', (await self.bot.get_prefix(ctx))[0])
-            help_text = help_text.split('--NEWMSG--')
-            
-            for paragraph in help_text:
-                paragraph = paragraph.strip()
-                
-                if len(paragraph) != 0:
-                    await ctx.author.send(paragraph)
-    
-    
-    async def get_help_text(self, help_text, is_mod, only_mod):
+        
+        is_mod = await is_moderator(ctx)
+        only_mod = args is not None and 'so mod' in StringTools.clean(args)
+        
         if not is_mod:
             return help_text.split('--MODERATORCOMMANDS--')[0]
         
