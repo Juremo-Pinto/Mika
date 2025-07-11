@@ -5,7 +5,7 @@ from Modules.Logging.formatter import DiscordStyleFormatter
 from Modules.Logging.discord_logger import DiscordLogger, getLevelValue
 
 
-logger = DiscordLogger("AutismBOT", logging.NOTSET, logging.NOTSET)
+logger = DiscordLogger("TetoBOT", logging.NOTSET, logging.NOTSET)
 """Global logger instance"""
 
 class _logger_set(ReloadableComponent):

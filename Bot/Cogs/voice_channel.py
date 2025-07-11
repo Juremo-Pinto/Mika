@@ -67,7 +67,7 @@ class VoiceChatCommands(commands.Cog):
     async def keep_connection_alive(self, voice_client):
         while voice_client.channel.id in self.ping_list:
             try:
-                await voice_client.channel.guild.me.edit(nick="Autista")
+                await voice_client.channel.guild.me.edit(nick="Tato")
                 logger.debug(f"Ping! in '{voice_client.channel.guild.name}'")
             except discord.ClientException:
                 pass
