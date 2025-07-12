@@ -1,6 +1,6 @@
 import functools, os, discord
 
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, List, Tuple
 from Modules.database_manager import DatabaseManager
 from discord.ext.commands import Context
 
@@ -13,26 +13,27 @@ class Permission:
         await cls.database.setup(
             structure={
                 'permissionTaggedRoles': {
-                    'role': 'TEXT',
+                    'role_id': 'INTEGER',
                     'category': 'TEXT',
-                    'server_ID': 'INTEGER',
+                    'server_id': 'INTEGER',
                 }
         })
+    
     
     @classmethod
     async def _fetch_roles_from_database(cls, ctx: Context, category):
         all_category = 'ALL' in category
         
-        query = await Permission._build_query(all_category, category)
-        parameters = await Permission._build_parameters(ctx, all_category, category)
+        query = await cls._build_query(all_category, category)
+        parameters = await cls._build_parameters(ctx, all_category, category)
         
         return await cls.database.fetchall(query, parameters)
     
     
     # private functions
     @staticmethod
-    async def _build_query(all, category):
-        query = "SELECT role FROM permissionTaggedRoles WHERE "
+    async def _build_query(all: bool, category: Tuple[str]):
+        query = "SELECT role_id FROM permissionTaggedRoles WHERE "
         
         if not all:
             query += "category IN ({}) AND ".format(', '.join(['?'] * len(category)))
@@ -43,8 +44,8 @@ class Permission:
     
     
     @staticmethod
-    async def _build_parameters(ctx: Context, all, category):
-        parameters = []
+    async def _build_parameters(ctx: Context, all: bool, category: Tuple[str]):
+        parameters: List[str] = []
         
         if not all:
             parameters += [*category]
@@ -55,12 +56,11 @@ class Permission:
 
 
 
-
 # functions (that may be used)
-async def is_user_role_tagged(ctx: Context[Any], *category):
+async def is_user_role_tagged(ctx: Context, *category):
     blacklisted_roles = await Permission._fetch_roles_from_database(ctx, category)
     
-    return any(user_role.name == blacklisted_role[0] for blacklisted_role in blacklisted_roles for user_role in ctx.author.roles)
+    return any(user_role.id == blacklisted_role[0] for blacklisted_role in blacklisted_roles for user_role in ctx.author.roles)
 
 async def is_moderator(ctx: Context | discord.Message):
     return ctx.author.guild_permissions.administrator

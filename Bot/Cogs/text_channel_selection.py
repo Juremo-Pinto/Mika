@@ -26,7 +26,7 @@ class TextChannelSelection(commands.Cog):
         if msg is None:
             await ctx.send("que, lembrar do que?")
         
-        index = self.command_map.get(msg, None)
+        index = self.command_map.get(msg.upper(), None)
         server_id = ctx.guild.id
         channel_id = ctx.channel.id
         
@@ -49,6 +49,8 @@ class TextChannelSelection(commands.Cog):
                 query = "INSERT INTO storedLocations VALUES (?, ?, ?)"
                 await self.database.commit(query, (channel_id, server_id, index))
                 await ctx.send("Tá to lembrano")
+        else:
+            await ctx.send("que")
     
     
     
