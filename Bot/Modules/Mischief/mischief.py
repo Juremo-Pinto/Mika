@@ -51,13 +51,24 @@ class Mischief(ReloadableComponent):
     async def reload(self):
         logger.info("Reloading Mischief")
         await self.load()
+        await self.set_jobs()
     
     
     async def commence_moderate_mischief(self):
         """STARTS THE FUN
         """
         logger.info('Mischief: Initialized the funny lmao xdxd')  
+        await self.set_jobs()
         self.scheduler.start()
+    
+    
+    async def set_jobs(self):
+        for guild in self.settings["guilds"]:
+            fetched_guild = await self.info_manager.fetch_guild_by_name(guild)
+            
+            if fetched_guild is not None:
+                job_schedule = MischiefJob(self, fetched_guild)
+                self.mischief_job_registry.append(job_schedule)
     
     
     async def load(self):
@@ -65,13 +76,6 @@ class Mischief(ReloadableComponent):
         self.scheduler.remove_all_jobs()
         
         self.interval: int = self.settings["interval_seconds"]
-        
-        for guild in self.settings["guilds"]:
-            fetched_guild = await self.info_manager.fetch_guild_by_name(guild)
-            
-            if fetched_guild is not None:
-                job_schedule = MischiefJob(self, fetched_guild)
-                self.mischief_job_registry.append(job_schedule)
         
         self.regular_audios = os.listdir(REGULAR_AUDIO_PATH)
         self.rare_audios = [path for path in os.listdir(RARE_AUDIO_PATH) if not path.endswith(".json")]
@@ -209,6 +213,8 @@ class Mischief(ReloadableComponent):
             if err:
                 logger.error(err)
             playback_complete_event.set()
+        
+        logger.info(f"Mischief: Doing some stuff in {guild.name}")
         
         voice_client.play(audio_source, after = stop)
         logger.info(f"Mischief: Love me some {audio_name}")
