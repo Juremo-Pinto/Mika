@@ -2,12 +2,13 @@ import random
 
 from discord import Guild
 from Modules.Logging.logger import logger
-
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 class MischiefJob:
     def __init__(self, parent, guild: Guild):
         self.parent = parent
         
+        assert isinstance(parent.scheduler, AsyncIOScheduler)
         self.job = parent.scheduler.add_job(self.mischief_interface, 'interval', seconds = parent.interval)
         self.guild = guild
         

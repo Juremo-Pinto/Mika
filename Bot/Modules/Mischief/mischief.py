@@ -1,9 +1,5 @@
 # mischief.py
 
-from Modules.reloadable import ReloadableComponent
-from Modules.Mischief.mischief_job import MischiefJob
-from Modules.settings import Settings
-from Modules.Logging.logger import logger
 import os, random, discord, asyncio, resources_path
 from typing import Dict, List
 
@@ -13,7 +9,13 @@ from json import JSONDecodeError
 from discord.ext.commands import Bot
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.job import Job
 
+from Modules.enableable import Enableable
+from Modules.reloadable import ReloadableComponent
+from Modules.Mischief.mischief_job import MischiefJob
+from Modules.settings import Settings
+from Modules.Logging.logger import logger
 from Modules.utils import Utils
 from Modules.information_manager import InformationManager
 
@@ -23,7 +25,7 @@ RARE_AUDIO_PATH: str = os.path.join(resources_path.AUDIOS, "Rare")
 JSON_CHANCE_PATH: str = os.path.join(RARE_AUDIO_PATH, "rare_chances.json")
 
 
-class Mischief(ReloadableComponent):
+class Mischief(ReloadableComponent, Enableable):
     """A considerably small amount of mischief will be caused.
     """
     def __init__(self, bot: Bot):
@@ -46,6 +48,28 @@ class Mischief(ReloadableComponent):
         
         self.mischief_job_registry: List[MischiefJob] = []
         self.scheduler = AsyncIOScheduler()
+        
+        self.is_enable = True
+    
+    
+    def enable(self):
+        if self.is_enable == True:
+            return
+        
+        self.is_enable = True
+        for job in self.scheduler.get_jobs():
+            assert isinstance(job, Job)
+            job.resume()
+    
+    
+    def disable(self):
+        if self.is_enable == False:
+            return
+        
+        self.is_enable = False
+        for job in self.scheduler.get_jobs():
+            assert isinstance(job, Job)
+            job.pause()
     
     
     async def reload(self):
@@ -54,9 +78,7 @@ class Mischief(ReloadableComponent):
         await self.set_jobs()
     
     
-    async def commence_moderate_mischief(self):
-        """STARTS THE FUN
-        """
+    async def initiate(self):
         logger.info('Mischief: Initialized the funny lmao xdxd')  
         await self.set_jobs()
         self.scheduler.start()

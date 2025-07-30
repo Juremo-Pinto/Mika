@@ -39,7 +39,8 @@ class BotClient(Bot):
             'Cogs.youtube_playback.youtube_playback',
             'Cogs.text_channel_selection',
             'Cogs.mass_message_deletion',
-            'Cogs.role_tag_controller'
+            'Cogs.role_tag_controller',
+            'Cogs.mischief_manager'
         )
         
         self.register_signal_handlers()

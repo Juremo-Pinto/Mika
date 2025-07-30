@@ -5,7 +5,6 @@ from Modules.Logging.discord_logger import DevFallback
 from Modules.reloadable import ReloadableComponent
 from Modules.settings import Settings
 from Modules.Logging.logger import logger
-from Modules.Mischief.mischief import Mischief
 from Modules.database_manager import DatabaseManager
 from Modules.command_permissions import Permission, developer
 
@@ -15,8 +14,6 @@ class startup(commands.Cog):
     
     async def _object_startup(self):
         await logger.set_bot(self.bot)
-        
-        self.fnuuy = Mischief(self.bot)
     
     
     async def cog_load(self):
@@ -35,8 +32,6 @@ class startup(commands.Cog):
         logger.info("Connected to the following guilds:")
         for guild in self.bot.guilds:
             logger.info(f" - {guild.name} (ID: {guild.id})")
-        
-        await self.fnuuy.commence_moderate_mischief()
     
     
     @commands.command(name="reload")
