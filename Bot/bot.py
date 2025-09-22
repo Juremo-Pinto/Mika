@@ -40,7 +40,7 @@ class BotClient(Bot):
             'Cogs.text_channel_selection',
             'Cogs.mass_message_deletion',
             'Cogs.role_tag_controller',
-            'Cogs.mischief_manager'
+            'mischief.controller'
         )
         
         self.register_signal_handlers()

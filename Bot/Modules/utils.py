@@ -1,6 +1,6 @@
 import os, sys, resources_path
 from typing import Any, Callable, Iterable, List, Optional, Sized, TypeVar
-import zc.lockfile # type: ignore
+from filelock import Timeout, FileLock
 
 from unidecode import unidecode
 
@@ -8,9 +8,10 @@ class Utils:
     @staticmethod
     def is_duplicate(lock_name: str) -> Optional[Any]:
         try:
-            lock: Any = zc.lockfile.LockFile(lock_name) 
+            lock = FileLock(lock_name, timeout=0) 
+            lock.acquire()
             return lock 
-        except zc.lockfile.LockError:  
+        except Timeout:  
             return None
     
     @staticmethod

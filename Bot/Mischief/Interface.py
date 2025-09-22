@@ -1,13 +1,17 @@
 from Modules.reloadable import ReloadableComponent
 from Modules.enableable import Enableable
-
+from discord.ext.commands import Cog
 
 class BaseMischief(Enableable, ReloadableComponent):
     mischief_name = None
     bot = None
     
-    def _set_bot(self, bot):
+    def __init__(self, bot):
         self.bot = bot
+    
+    def _set_bot(self, bot):
+        if self.bot is None:
+            self.bot = bot
 
 
 class TextMischief(BaseMischief):
@@ -16,3 +20,7 @@ class TextMischief(BaseMischief):
     
     async def execute(self, validated_msg):
         raise NotImplementedError
+
+
+class CogMischief(BaseMischief, Cog):
+    pass

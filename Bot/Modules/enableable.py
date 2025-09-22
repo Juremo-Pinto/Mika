@@ -1,7 +1,7 @@
 from typing import Protocol
 
 # interface
-class Enableable(Protocol):
+class Enableable:
     is_enable: bool
     
     async def initiate(self) -> None:

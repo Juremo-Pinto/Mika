@@ -1,20 +1,19 @@
 # random_audio.py
 
-from Modules.command_manipulation import command_extension
+from mischief.interface import CogMischief
+from Modules.command_manipulation.command_extension import command_extension
 import os, random, discord, asyncio, resources_path
 from typing import Dict, List
 
 import json
 from json import JSONDecodeError
 
-from discord.ext.commands import Bot, Cog
+from discord.ext.commands import Bot, Context
 from discord.ext import commands
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.job import Job
 
-from Modules.enableable import Enableable
-from Modules.reloadable import ReloadableComponent
 from Modules.settings import Settings
 from Modules.Logging.logger import logger
 from Modules.utils import Utils
@@ -26,9 +25,12 @@ RARE_AUDIO_PATH: str = os.path.join(resources_path.AUDIOS, "Rare")
 JSON_CHANCE_PATH: str = os.path.join(RARE_AUDIO_PATH, "rare_chances.json")
 
 
-class RandomAudioMischief(ReloadableComponent, Enableable, Cog):
+class RandomAudioMischief(CogMischief):
     """A considerably small amount of mischief will be caused.
     """
+    
+    mischief_name = "call_audio"
+    
     class AsyncTask:
         def __init__(self, parent, guild: discord.Guild):
             self.parent = parent
@@ -280,7 +282,7 @@ class RandomAudioMischief(ReloadableComponent, Enableable, Cog):
         await voice_client.disconnect()
     
     
-    @commands.Command(name="venha")
+    @commands.command(name="venha")
     @command_extension(
         "comer cimento",
         "nos dar comer cimento",
@@ -289,8 +291,21 @@ class RandomAudioMischief(ReloadableComponent, Enableable, Cog):
         "nos mogar",
         "vir",
         "chegar mais")
-    async def force_audio_playback(self, ctx, *, audio = None):
+    async def force_audio_playback(self, ctx: Context, *, audio = None):
         audios = self.regular_audios +  self.rare_audios
+        
+        if ctx.author.voice is None:
+            await ctx.reply("irmãozinho tu nem tá em call")
+            return
+        
+        guild = ctx.author.voice.channel.guild
+        
+        if any(vc.guild.id == guild.id for vc in self.bot.voice_clients):
+            await ctx.reply("Não")
+            return
+        
+        channel = ctx.author.voice.channel
+        await channel.connect()
         
         if audio is None:
             audio_path, selected_audio = await self.get_random_audio()
@@ -300,6 +315,6 @@ class RandomAudioMischief(ReloadableComponent, Enableable, Cog):
                 await ctx.reply("Audio not found!")
                 return
             selected_audio = matches[0]  # pick the first match
-            audio_path: str = os.path.join(REGULAR_AUDIO_PATH, selected_audio)
+            audio_path = os.path.join(REGULAR_AUDIO_PATH, selected_audio)
         
         await self.play_audio(audio_path, selected_audio)
