@@ -1,19 +1,20 @@
-# mischief.py
+# random_audio.py
 
+from Modules.command_manipulation import command_extension
 import os, random, discord, asyncio, resources_path
 from typing import Dict, List
 
 import json
 from json import JSONDecodeError
 
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, Cog
+from discord.ext import commands
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.job import Job
 
 from Modules.enableable import Enableable
 from Modules.reloadable import ReloadableComponent
-from Modules.Mischief.mischief_job import MischiefJob
 from Modules.settings import Settings
 from Modules.Logging.logger import logger
 from Modules.utils import Utils
@@ -25,9 +26,37 @@ RARE_AUDIO_PATH: str = os.path.join(resources_path.AUDIOS, "Rare")
 JSON_CHANCE_PATH: str = os.path.join(RARE_AUDIO_PATH, "rare_chances.json")
 
 
-class Mischief(ReloadableComponent, Enableable):
+class RandomAudioMischief(ReloadableComponent, Enableable, Cog):
     """A considerably small amount of mischief will be caused.
     """
+    class AsyncTask:
+        def __init__(self, parent, guild: discord.Guild):
+            self.parent = parent
+            
+            assert isinstance(parent.scheduler, AsyncIOScheduler)
+            self.job = parent.scheduler.add_job(self.mischief_interface, 'interval', seconds = parent.interval)
+            self.guild = guild
+            
+            logger.debug(f"Mischief Job Loaded: {self.guild.name}")
+        
+        
+        def mischief_interface(self):
+            try:
+                rdn = random.uniform(0, 100)
+                logger.debug(f"{self.guild.name} Mischief: rdn at {rdn}")
+                if rdn <= self.parent.settings["chance_percentage"]:
+                    self.parent.bot.loop.create_task(
+                        self.execute_trolling()
+                        )
+            except Exception as e:
+                self.parent.run_error(e)
+        
+        
+        async def execute_trolling(self):
+            self.job.pause()
+            await self.parent.perform_a_minuscule_amount_of_despicable_actions(self.guild)
+            self.job.resume()
+    
     def __init__(self, bot: Bot):
         self.bot = bot
         self.info_manager = InformationManager(self.bot)
@@ -46,7 +75,7 @@ class Mischief(ReloadableComponent, Enableable):
                         )
         
         
-        self.mischief_job_registry: List[MischiefJob] = []
+        self.mischief_job_registry = []
         self.scheduler = AsyncIOScheduler()
         
         self.is_enable = True
@@ -89,7 +118,7 @@ class Mischief(ReloadableComponent, Enableable):
             fetched_guild = await self.info_manager.fetch_guild_by_name(guild)
             
             if fetched_guild is not None:
-                job_schedule = MischiefJob(self, fetched_guild)
+                job_schedule = self.AsyncTask(self, fetched_guild)
                 self.mischief_job_registry.append(job_schedule)
     
     
@@ -103,7 +132,7 @@ class Mischief(ReloadableComponent, Enableable):
         self.rare_audios = [path for path in os.listdir(RARE_AUDIO_PATH) if not path.endswith(".json")]
         
         if not os.path.exists(JSON_CHANCE_PATH):
-            Mischief.create_chance_json()
+            RandomAudioMischief.create_chance_json()
         
         await self.load_json()
         await self.fill_json_default_songs() 
@@ -223,11 +252,15 @@ class Mischief(ReloadableComponent, Enableable):
         await random.choice(active_voice_channels).connect()
         
         audio_path, audio_name = await self.get_random_audio()
+        logger.info(f"Mischief: Doing some stuff in {guild.name}")
+        await self.play_audio(audio_path, audio_name)
+    
+    
+    async def play_audio(self, audio_path, audio_name):
         audio_source = discord.FFmpegPCMAudio(audio_path)
         
         voice_client: discord.VoiceClient = self.bot.voice_clients[0]
         
-        logger.info(f"Mischief: Doing some stuff in {guild.name}")
         await asyncio.sleep(random.randint(1, 10))
         
         playback_complete_event = asyncio.Event()
@@ -245,3 +278,28 @@ class Mischief(ReloadableComponent, Enableable):
         
         await asyncio.sleep(random.uniform(0, 0.2))  
         await voice_client.disconnect()
+    
+    
+    @commands.Command(name="venha")
+    @command_extension(
+        "comer cimento",
+        "nos dar comer cimento",
+        "espalhar sabedoria",
+        "nos moggar",
+        "nos mogar",
+        "vir",
+        "chegar mais")
+    async def force_audio_playback(self, ctx, *, audio = None):
+        audios = self.regular_audios +  self.rare_audios
+        
+        if audio is None:
+            audio_path, selected_audio = await self.get_random_audio()
+        else:
+            matches = [a for a in audios if audio.lower() in a.lower()]
+            if not matches:
+                await ctx.reply("Audio not found!")
+                return
+            selected_audio = matches[0]  # pick the first match
+            audio_path: str = os.path.join(REGULAR_AUDIO_PATH, selected_audio)
+        
+        await self.play_audio(audio_path, selected_audio)
