@@ -1,5 +1,5 @@
 from Modules.utils import StringTools, Utils
-from mischief.Interface import TextMischief
+from mischief.interface import TextMischief
 
 
 class BadWordResponse(TextMischief):

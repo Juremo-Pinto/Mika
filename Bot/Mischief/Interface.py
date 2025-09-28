@@ -5,6 +5,7 @@ from discord.ext.commands import Cog, Bot
 
 class BaseMischief(Enableable, ReloadableComponent):
     mischief_name = None
+    mischief_description = None
     bot: Bot = None
     
     def __init__(self, bot):

@@ -45,7 +45,7 @@ class ReloadableComponent:
         self._loop.create_task(func(*args, **kwargs))
     
     @staticmethod
-    async def _async_dispatch_func(self, func, *args, **kwargs):
+    async def _async_dispatch_func(func, *args, **kwargs):
         if inspect.iscoroutinefunction(func):
             return await func(*args, **kwargs)
         return func(*args, **kwargs)

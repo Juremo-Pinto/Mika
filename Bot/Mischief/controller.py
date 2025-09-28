@@ -99,7 +99,11 @@ class MischiefController(Cog):
         message = ""
         
         for key, value in self.mischief_registry[BaseMischief].items():
-            pass
+            desc = value.mischief_description or "no description"
+            
+            message += f"{key} - {desc}\n"
+        
+        await ctx.send(message)
     
     
     @commands.Cog.listener()
