@@ -114,8 +114,8 @@ class MischiefController(Cog):
         content = StringTools.normalize_str(content)
         
         for text_mischief in self.mischief_registry[TextMischief].values():
-            if text_mischief._validate(content, msg):
-                await text_mischief.execute(content, msg)
+            if await text_mischief._validate(content, msg):
+                await TextMischief._async_dispatch_func(text_mischief.execute, content, msg)
 
 
 

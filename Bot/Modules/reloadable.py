@@ -30,9 +30,9 @@ class ReloadableComponent:
         cls.__init__ = __init__
     
     
-    def _dispatch_function(self, func):
+    def _dispatch_function(self, func, *args, **kwargs):
         if not inspect.iscoroutinefunction(func):
-            return func()
+            return func(*args, **kwargs)
         
         if self._loop is None:
             try: 
@@ -42,7 +42,13 @@ class ReloadableComponent:
                 "There is no loop present in this thread, you should pass self._loop manually"
                 )
         
-        self._loop.create_task(func())
+        self._loop.create_task(func(*args, **kwargs))
+    
+    @staticmethod
+    async def _async_dispatch_func(self, func, *args, **kwargs):
+        if inspect.iscoroutinefunction(func):
+            return await func(*args, **kwargs)
+        return func(*args, **kwargs)
     
     
     def load(self):
