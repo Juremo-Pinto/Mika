@@ -66,7 +66,7 @@ class MischiefController(Cog):
         logger.info(f"Cog Loaded: {self.__cog_name__}")
     
     
-    @commands.command(name="t_enable")
+    @commands.command(name="t_enable", aliases=["troll_disable"])
     async def enable_mischief(self, ctx: Context, *trolling):
         mischife = self._get_mischiefs(*trolling)
         
@@ -80,7 +80,7 @@ class MischiefController(Cog):
         await ctx.message.add_reaction("<:cat:1264072257433632789>")
     
     
-    @commands.command(name="t_disable")
+    @commands.command(name="t_disable", aliases=["troll_enable"])
     async def disable_mischief(self, ctx: Context, *trolling):
         mischife = self._get_mischiefs(*trolling)
         
@@ -92,6 +92,14 @@ class MischiefController(Cog):
             item.disable()
         
         await ctx.message.add_reaction("<:cat:1264072257433632789>")
+    
+    
+    @commands.command(name="t_list", aliases=["troll_list"])
+    async def troll_list(self, ctx):
+        message = ""
+        
+        for key, value in self.mischief_registry[BaseMischief].items():
+            pass
     
     
     @commands.Cog.listener()
