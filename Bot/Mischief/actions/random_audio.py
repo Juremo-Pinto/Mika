@@ -30,6 +30,7 @@ class RandomAudioMischief(CogMischief):
     """
     
     mischief_name = "call_audio"
+    mischief_description = "Thing that enters the call randomly and plays a random audio in resources/audio"
     
     class AsyncTask:
         def __init__(self, parent, guild: discord.Guild):

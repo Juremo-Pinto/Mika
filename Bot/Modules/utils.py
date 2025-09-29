@@ -19,7 +19,7 @@ class Utils:
         return sys.stdout is not None
     
     @staticmethod
-    async def get_the_forbidden_list() -> List[str]:
+    def get_the_forbidden_list() -> List[str]:
         path = os.path.join(resources_path.TEXTS, 'the_big_forbidden_list_of_bad_words.txt')
         with open(path, 'r') as file:
             forbidden_list = file.read().split(',')
