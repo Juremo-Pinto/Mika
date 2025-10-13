@@ -48,7 +48,7 @@ class RandomAudioMischief(CogMischief):
                 rdn = random.uniform(0, 100)
                 logger.debug(f"{self.guild.name} Mischief: rdn at {rdn}")
                 if rdn <= self.parent.settings["chance_percentage"]:
-                    self.parent.bot.loop.create_task(
+                    self.parent._bot.loop.create_task(
                         self.execute_trolling()
                         )
             except Exception as e:
