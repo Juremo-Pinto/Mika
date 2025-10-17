@@ -41,7 +41,7 @@ class TextChannelSelection(commands.Cog):
                     await ctx.reply("O seu burro você ja ta no canal escolhido")
                 
                 else:                
-                    query = "UPDATE storedLocations SET channel = ? WHERE server_ID = ?"
+                    query = "UPDATE storedLocations SET channel_ID = ? WHERE server_ID = ?"
                     await self.database.commit(query, (channel_id, server_id))
                     await ctx.send("Tá to relembrano")
             
@@ -54,7 +54,7 @@ class TextChannelSelection(commands.Cog):
     
     
     
-    @commands.command(name = "esquecerCanal", aliases = ["ESQUECE"])
+    @commands.command(name = "esquecerCanal", aliases = ["ESQUECE", "ESQUECA"])
     @moderator()
     async def channelForget(self, ctx, *, msg = None):
         if msg is None:
@@ -64,7 +64,7 @@ class TextChannelSelection(commands.Cog):
         if index is not None:
             channel_id = ctx.channel.id
             server_id = ctx.guild.id
-            query = "SELECT channel FROM storedLocations WHERE server_ID = ? AND general_ID = ?"
+            query = "SELECT channel_ID FROM storedLocations WHERE server_ID = ? AND general_ID = ?"
             
             data = await self.database.fetchone(query, (server_id, index))
             
@@ -79,7 +79,7 @@ class TextChannelSelection(commands.Cog):
                 try:
                     await self.bot.wait_for("reaction_add", timeout=5.0, check=checkForReaction)
                     
-                    query2 = "DELETE FROM storedLocations WHERE channel = ? AND server_ID = ? AND general_ID = ?"
+                    query2 = "DELETE FROM storedLocations WHERE channel_ID = ? AND server_ID = ? AND general_ID = ?"
                     await self.database.commit(query2, (channel_id, server_id, index))
                     await ctx.send("Tá to esquecendo")
                 except asyncio.TimeoutError:
