@@ -63,7 +63,7 @@ async def is_user_role_tagged(ctx: Context, *category):
     return any(user_role.id == blacklisted_role[0] for blacklisted_role in blacklisted_roles for user_role in ctx.author.roles)
 
 async def is_moderator(ctx: Context | discord.Message):
-    return is_bot_developer(ctx) or ctx.author.guild_permissions.administrator
+    return await is_bot_developer(ctx) or ctx.author.guild_permissions.administrator
 
 async def is_bot_developer(ctx: Context):
     bot_developer_id = os.environ['BOT_DEV_DISCORD_ID']

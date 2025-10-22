@@ -39,7 +39,7 @@ class QuickCache:
     
     async def _set_ttl(self, key, ttl_secs):
         # Set the time to live (TTL) for a new item created
-        self._evaluate_ttl()
+        await self._evaluate_ttl()
         
         if ttl_secs == 0:
             return
