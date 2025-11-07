@@ -270,6 +270,9 @@ class RandomAudioMischief(CogMischief):
     
     async def play_audio(self, audio_path, audio_name):
         guild = None
+        
+        await asyncio.sleep(random.uniform(1, 6))
+        
         for vc in self._bot.voice_clients:
             if vc.is_connected():
                 guild = vc.guild
@@ -279,21 +282,20 @@ class RandomAudioMischief(CogMischief):
             # no voice client connected → should never happen
             logger.warning("No voice client found!")
             return
-
+        
         audio_source = discord.FFmpegPCMAudio(audio_path)
         playback_complete_event = asyncio.Event()
         
-        await asyncio.sleep(random.uniform(1, 6))
-
+        
         def stop(err: Exception | None):
             if err:
                 logger.error(err)
             playback_complete_event.set()
-
+        
         voice_client.play(audio_source, after=stop)
         logger.info(f"Mischief: Love me some {audio_name}")
         await playback_complete_event.wait()
-
+        
         await asyncio.sleep(random.uniform(0, 0.2))
         await voice_client.disconnect()
 
