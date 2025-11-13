@@ -1,5 +1,6 @@
 # random_audio.py
 
+from Modules.command_permissions import developer
 from mischief.interface import CogMischief
 from Modules.command_manipulation.command_extension import command_extension
 import os, random, discord, asyncio, resources_path
@@ -309,6 +310,7 @@ class RandomAudioMischief(CogMischief):
         "nos mogar",
         "vir",
         "chegar mais")
+    @developer(rejection_message="NUH UH")
     async def force_audio_playback(self, ctx: Context, *, audio=None):
         if ctx.author.voice is None:
             await ctx.reply("irmãozinho tu nem tá em call")
