@@ -1,6 +1,6 @@
 import random
 from Modules.Logging.logger import logger
-from Modules.settings import Settings
+from Modules.settings.settings import Settings
 from mischief.interface import TextMischief
 
 from discord.ext.commands import Context, Bot
@@ -13,7 +13,7 @@ class RandomReplyMischief(TextMischief):
     def __init__(self, bot: Bot):
         self.bot = bot
         
-        self.settings = Settings("random_reply")
+        self.settings = Settings("random_reply", section="mischief")
         self.settings.setup(
                 min_amount = 500,
                 max_amount = 5000,

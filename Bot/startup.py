@@ -3,7 +3,7 @@ from discord.ext.commands import Context
 
 from Modules.Logging.discord_logger import DevFallback
 from Modules.reloadable import ReloadableComponent
-from Modules.settings import Settings
+from Modules.settings.settings import Settings
 from Modules.Logging.logger import logger
 from Modules.database_manager import DatabaseManager
 from Modules.command_permissions import Permission, developer

@@ -14,7 +14,7 @@ from discord.ext import commands
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from Modules.settings import Settings
+from Modules.settings.settings import Settings
 from Modules.Logging.logger import logger
 from Modules.utils import Utils
 from Modules.information_manager import InformationManager
@@ -69,7 +69,7 @@ class RandomAudioMischief(CogMischief):
         
         self._loop = self._bot.loop
         
-        self.settings = Settings("random_audio")
+        self.settings = Settings("random_audio", section="mischief")
         self.settings.setup(
                         guilds = [
                                 "Whatsapp 2",

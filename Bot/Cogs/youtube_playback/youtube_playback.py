@@ -217,7 +217,7 @@ class youtube_playback(commands.Cog):
         await ctx.send('ok')
     
     
-    @commands.command("playing", aliases = ["diz", "fala"])
+    @commands.command("playing", aliases = ["diz"])
     async def playing(self, ctx: Context, *, msg: str):
         voice_channel_id = await get_voice_channel_id(ctx.voice_client)
         

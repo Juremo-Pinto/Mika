@@ -1,5 +1,5 @@
 import logging
-from Modules.settings import Settings
+from Modules.settings.settings import Settings
 from Modules.reloadable import ReloadableComponent
 from Modules.Logging.formatter import DiscordStyleFormatter
 from Modules.Logging.discord_logger import DiscordLogger, getLevelValue
