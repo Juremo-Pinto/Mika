@@ -38,6 +38,11 @@ class GeneralCommands(commands.Cog):
         await ctx.author.send(f"<:trol:968658017086242897>")
     
     
+    @commands.command(name = "userid")
+    async def getid(self, ctx):
+        logger.info(f"user id is: {ctx.author.id}")
+    
+    
     @commands.command(name = "autista")
     async def sendImage(self, ctx):
         file = discord.File(f"{resources_path.IMAGES}/autismo.jpg", filename="autismo.png")

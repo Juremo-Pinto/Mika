@@ -7,8 +7,6 @@ from discord.ext import commands
 from discord.ext.commands import Context, Bot
 from io import BytesIO
 
-from Modules.database_manager import DatabaseManager
-from Modules.command_permissions import moderator
 from Modules.Logging.logger import logger
 from Modules.settings.per_user import UserSettings
 
@@ -23,6 +21,8 @@ class TextToSpeech(commands.Cog):
         )
         
         self.flag_dict = {}
+        
+        self.tts_queue = {}
     
     
     async def cog_load(self):
@@ -30,24 +30,24 @@ class TextToSpeech(commands.Cog):
     
     
     def language_exists(self, lang_code: str) -> bool:
-        available = tts_langs()  # GET ALL THE [[SUPPORTED LANGUAGES]]
+        available = tts_langs()
         return lang_code.lower() in available
     
     
-    async def get_language(self, msg, default):
-        keyword_list = msg.split(' ')
+    async def get_language(self, text, default):
+        keyword_list = text.split(' ')
         
         for word in keyword_list:
             if word.startswith("--lang:"):
                 lang = word.removeprefix('--lang:').strip()
-                msg = msg.replace(word, "")
-                return msg, lang
+                text = text.replace(word, "")
+                return text, lang
         
-        return msg, default
+        return text, default
     
     
     @commands.command(name="fala", aliases=["tts"])
-    async def call_tts(self, ctx: Context, *, msg):
+    async def call_tts(self, ctx: Context, *, text):
         vc = ctx.voice_client
         user_id = ctx.author.id
         
@@ -55,26 +55,7 @@ class TextToSpeech(commands.Cog):
             await ctx.reply("nuh uh")
             return
         
-        await self.tts_speak(msg, user_id, vc)
-    
-    
-    
-    async def tts_speak(self, msg, user_id, vc):
-        user_lang = self.user_settings.get_for_user(user_id, 'lang')
-        
-        msg, language = await self.get_language(msg, user_lang)
-        
-        if not self.language_exists(language):
-            language = user_lang
-        
-        tts = gTTS(text=msg, lang=language, slow=False)
-        
-        audio_buffer = BytesIO()
-        tts.write_to_fp(audio_buffer) 
-        audio_buffer.seek(0)
-        
-        audio_source = discord.FFmpegPCMAudio(audio_buffer, pipe=True)
-        vc.play(audio_source)
+        await self.enqueue_tts(text, user_id, vc, ctx.guild.id)
     
     
     @commands.command(name="lingua", aliases=["lang"])
@@ -110,6 +91,7 @@ class TextToSpeech(commands.Cog):
             "channel_id": ctx.channel.id
         }
     
+    
     @commands.command(name="tts-unflag", aliases=["tts_unflag", "ttsunflag", "ttsuf"])
     async def tts_unflag(self, ctx: Context):
         await ctx.message.delete()
@@ -122,11 +104,6 @@ class TextToSpeech(commands.Cog):
                 return await ctx.send("aye")
         
         await ctx.send("nuh uh")
-    
-    
-    async def get_voice_client(self, msg):
-        ctx = await self.bot.get_context(msg)
-        return ctx.voice_client
     
     
     @commands.Cog.listener()
@@ -151,7 +128,62 @@ class TextToSpeech(commands.Cog):
         
         vc = await self.get_voice_client(message)
         
-        await self.tts_speak(message.content, user.id, vc)
+        await self.enqueue_tts(message.content, user.id, vc, guild.id)
+    
+    
+    async def get_voice_client(self, text):
+        ctx = await self.bot.get_context(text)
+        return ctx.voice_client
+    
+    
+    async def get_gtts_object(self, user_id, text):
+        user_lang = self.user_settings.get_for_user(user_id, 'lang')
+        
+        text, language = await self.get_language(text, user_lang)
+        
+        if not self.language_exists(language):
+            language = user_lang
+        
+        return gTTS(text=text, lang=language, slow=False)
+    
+    
+    async def enqueue_tts(self, text, user_id, vc, guild_id):
+        queue_exists = guild_id in self.tts_queue.keys()
+        
+        self.tts_queue.setdefault(guild_id, [])
+        tts = await self.get_gtts_object(user_id, text)
+        self.tts_queue[guild_id].append(tts)
+        
+        if not queue_exists:
+            await self.tts_loop(vc, guild_id)
+    
+    
+    async def tts_loop(self, vc, guild_id):
+        while(len(self.tts_queue[guild_id]) > 0):
+            tts = self.tts_queue[guild_id].pop(0)
+            
+            await self.tts_speak(tts, vc)
+        
+        del self.tts_queue[guild_id]
+    
+    
+    async def tts_speak(self, tts, vc):
+        audio_buffer = BytesIO()
+        tts.write_to_fp(audio_buffer) 
+        audio_buffer.seek(0)
+        
+        audio_source = discord.FFmpegPCMAudio(audio_buffer, pipe=True, before_options='-re')
+        
+        flag = asyncio.Event()
+        
+        if vc:
+            vc.play(audio_source, after= lambda e: flag.set())
+            await flag.wait()
+    
+    
+    def clear(self, guild_id):
+        del self.flag_dict[guild_id]
+        self.tts_queue[guild_id] = []
     
     
     @commands.Cog.listener()
@@ -162,13 +194,13 @@ class TextToSpeech(commands.Cog):
             return
         
         if member == self.bot.user and before.channel != after.channel:
-            del self.flag_dict[guild.id]
+            self.clear(guild.id)
             return
         
         tts_user = self.flag_dict[guild.id].get("user_id")
         
         if member.id == tts_user and before.channel != after.channel:
-            del self.flag_dict[guild.id]
+            self.clear(guild.id)
             return
 
 

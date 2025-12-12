@@ -29,15 +29,19 @@ class UserSettings(BaseSettings):
     
     
     def get_for_user(self, user_id, key):
-        self.setup_if_not_exists(user_id)
+        id_str = str(user_id)
         
-        return self._data[user_id][key]
+        self.setup_if_not_exists(id_str)
+        
+        return self._data[id_str].get(key)
     
     
     def set_for_user(self, user_id, key, value, *, auto_save = True):
-        self.setup_if_not_exists(user_id)
+        id_str = str(user_id)
         
-        self._data[user_id][key] = value
+        self.setup_if_not_exists(id_str)
+        
+        self._data[id_str][key] = value
         
         if auto_save:
             self.save()
