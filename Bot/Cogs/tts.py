@@ -5,6 +5,7 @@ from gtts import gTTS
 from gtts.lang import tts_langs
 from discord.ext import commands
 from discord.ext.commands import Context, Bot
+from discord.utils import escape_mentions
 from io import BytesIO
 
 from Modules.Logging.logger import logger
@@ -31,7 +32,7 @@ class TextToSpeech(commands.Cog):
     
     def language_exists(self, lang_code: str) -> bool:
         available = tts_langs()
-        return lang_code.lower() in available
+        return lang_code in available.keys()
     
     
     async def get_language(self, text, default):
@@ -47,7 +48,7 @@ class TextToSpeech(commands.Cog):
     
     
     @commands.command(name="fala", aliases=["tts"])
-    async def call_tts(self, ctx: Context, *, text):
+    async def call_tts(self, ctx: Context):
         vc = ctx.voice_client
         user_id = ctx.author.id
         
@@ -55,11 +56,17 @@ class TextToSpeech(commands.Cog):
             await ctx.reply("nuh uh")
             return
         
+        text = ctx.message.clean_content
+        pref = ctx.prefix
+        cmd = ctx.invoked_with
+        
+        text = text.removeprefix(pref).removeprefix(cmd).strip()
+        
         await self.enqueue_tts(text, user_id, vc, ctx.guild.id)
     
     
     @commands.command(name="lingua", aliases=["lang"])
-    async def set_lang(self, ctx, lang):
+    async def set_lang(self, ctx, *, lang):
         user_id = ctx.author.id
         
         if not self.language_exists(lang):
@@ -128,12 +135,16 @@ class TextToSpeech(commands.Cog):
         
         vc = await self.get_voice_client(message)
         
-        await self.enqueue_tts(message.content, user.id, vc, guild.id)
+        await self.enqueue_tts(message.clean_content, user.id, vc, guild.id)
     
     
     async def get_voice_client(self, text):
         ctx = await self.bot.get_context(text)
         return ctx.voice_client
+    
+    
+    def clean_text(self, text):
+        return text.lower()
     
     
     async def get_gtts_object(self, user_id, text):
@@ -148,6 +159,8 @@ class TextToSpeech(commands.Cog):
     
     
     async def enqueue_tts(self, text, user_id, vc, guild_id):
+        text = self.clean_text(text)
+        
         queue_exists = guild_id in self.tts_queue.keys()
         
         self.tts_queue.setdefault(guild_id, [])
@@ -159,12 +172,21 @@ class TextToSpeech(commands.Cog):
     
     
     async def tts_loop(self, vc, guild_id):
-        while(len(self.tts_queue[guild_id]) > 0):
+        while(
+            guild_id in self.tts_queue.keys()
+            and len(self.tts_queue[guild_id]) > 0
+            ):
+            
             tts = self.tts_queue[guild_id].pop(0)
             
-            await self.tts_speak(tts, vc)
+            try:
+                await self.tts_speak(tts, vc)
+            except AssertionError:
+                logger.info("TTS: bot tried to speak a textless message, continuing...")
+                continue
         
-        del self.tts_queue[guild_id]
+        if guild_id in self.tts_queue.keys():
+            del self.tts_queue[guild_id]
     
     
     async def tts_speak(self, tts, vc):
@@ -182,19 +204,22 @@ class TextToSpeech(commands.Cog):
     
     
     def clear(self, guild_id):
-        del self.flag_dict[guild_id]
-        self.tts_queue[guild_id] = []
+        if guild_id in self.flag_dict.keys():
+            del self.flag_dict[guild_id]
+        
+        if guild_id in self.tts_queue.keys():
+            del self.tts_queue[guild_id]
     
     
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         guild = member.guild
         
-        if guild.id not in self.flag_dict.keys():
-            return
-        
         if member == self.bot.user and before.channel != after.channel:
             self.clear(guild.id)
+            return
+        
+        if guild.id not in self.flag_dict.keys():
             return
         
         tts_user = self.flag_dict[guild.id].get("user_id")
