@@ -40,6 +40,8 @@ bot = BotClient(
     help_command= None, 
     case_insensitive=True)
 
+def run():
+    bot.run(os.environ['TETO_DISCORD_TOKEN'])
 
 if __name__ == '__main__':
-    bot.run(os.environ['TETO_DISCORD_TOKEN'])
+    run()
