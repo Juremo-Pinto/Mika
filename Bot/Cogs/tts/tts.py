@@ -71,6 +71,8 @@ class TextToSpeech(commands.Cog):
         
         self.user_settings.set_for_user(user_id, "engine", engine)
         self.user_settings.set_for_user(user_id, "lang", engine_class.def_lang)
+        
+        ctx.send(f"i am now {engine}")
     
     async def try_send_dict(self, destination, dict: dict):
         message = "Language name - Language Code (the one youll use in the command)\n\n"
