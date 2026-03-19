@@ -1,3 +1,5 @@
+# bot.py
+
 from typing import Any, Tuple
 
 import discord, signal

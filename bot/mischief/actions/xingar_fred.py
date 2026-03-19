@@ -1,3 +1,5 @@
+# The one teto code responsible to having a chance to answer fred AND FRED SPECIFICALLY with a gif of a dog showing the middle finger
+
 import random
 from modules.logging.logger import logger
 from modules.settings.settings import Settings
