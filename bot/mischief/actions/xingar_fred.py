@@ -1,4 +1,4 @@
-# The one teto code responsible to having a chance to answer fred AND FRED SPECIFICALLY with a gif of a dog showing the middle finger
+# The one teto python file responsible to having a chance to answer fred AND FRED SPECIFICALLY with a gif of a dog showing the middle finger
 
 import random
 from modules.logging.logger import logger
@@ -10,6 +10,9 @@ from discord import Message
 
 
 class CACHORROARROMBADO(TextMischief):
+    mischief_name = "Xingar o fred fds"
+    mischief_description = "Random chance (defined in settings) to send that fuckass dog gif to fred every time he sends a message"
+
     def __init__(self, bot):
         self.bot = bot
         
