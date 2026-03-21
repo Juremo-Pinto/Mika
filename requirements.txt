@@ -4,7 +4,6 @@ APScheduler==3.11.0
 filelock==3.19.1
 Unidecode==1.4.0
 yt_dlp>=2025.9.23
-flask==3.1.2
 gtts==2.5.4
 samtts==0.2.0
 python-dotenv==1.2.1
