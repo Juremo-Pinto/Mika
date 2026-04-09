@@ -1,6 +1,3 @@
-# TETOOOOO
+# mika :D
 
-Personal discord bot for me and my friends, nothing more
-
-Spaghetti mess of a code btw
-
+bored as hell so might as well make a bot
