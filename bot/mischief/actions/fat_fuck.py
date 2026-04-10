@@ -6,7 +6,7 @@ class FatFuck(TextMischief):
     mischief_description = "Fat Fuck"
     
     def check(self, normalized_text, message):
-        return normalized_text == 'fat fuck' and message.author.id != self._bot.user.id
+        return normalized_text == 'fat fuck' and message.author.id != self._bot.user.id and message.author.id !=
     
     async def execute(self, normalized_text, message):
-        await message.channel.send(message.content)
+        await message.channel.send("LMAO")

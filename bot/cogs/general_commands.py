@@ -14,8 +14,15 @@ class GeneralCommands(commands.Cog):
     
     async def cog_load(self):
         logger.info(f"Cog Loaded: {self.__cog_name__}")
+        
+    @commands.command(name = "casa")
+    async def alow(self, ctx, arg):
+        if arg != "comigo?":
+            return
+        await ctx.send("nuh uh")
+            
     
-    @commands.command(name = "repita", aliases = ['repete'])
+    @commands.command(name = "fala", aliases = ['falae'])
     async def sendMessage(self, ctx, *, message):
         await ctx.send(message)
         await ctx.message.delete()

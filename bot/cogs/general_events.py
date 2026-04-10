@@ -32,7 +32,7 @@ class GeneralEvents(commands.Cog):
             greetings_channel = self.bot.get_channel(location_record[0])
             
             if greetings_channel:
-                await greetings_channel.send("Boa tarde")
+                await greetings_channel.send("https://tenor.com/view/miku-hi-gif-25920286")
                 logger.info(f"Startup message sent to marked channel: {marked_server.name}")
 
 

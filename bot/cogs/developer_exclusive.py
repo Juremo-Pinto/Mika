@@ -12,10 +12,10 @@ class DevOnlyCommands(commands.Cog):
     async def cog_load(self):
         logger.info(f"Cog Loaded: {self.__cog_name__}")
     
-    @commands.command(name = "desliga", aliases=["sybau", "morra", "morre"])
+    @commands.command(name = "APAGUE!!", aliases=["exploda", "#virepó", "desembrulhe-se"])
     @developer()
     async def turn_off_bot(self, ctx: Context[Any]):
-        await ctx.send("ok tchau")
+        await ctx.send(":[")
         await self.bot.close()
     
     @commands.command(name = "emoji")

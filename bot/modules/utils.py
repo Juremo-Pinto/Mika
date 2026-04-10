@@ -12,6 +12,7 @@ class Utils:
             lock.acquire()
             return lock 
         except Timeout:  
+            print ("die")
             return None
     
     @staticmethod
