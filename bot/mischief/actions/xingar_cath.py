@@ -1,4 +1,4 @@
-# The one teto python file responsible to having a chance to answer cath AND cath SPECIFICALLY with a gif of a dog showing the middle finger
+# The one teto python file responsible to having a chance to answer cath AND cath SPECIFICALLY with a gif of a horse showing the middle finger
 
 import random
 from modules.logging.logger import logger
@@ -9,8 +9,8 @@ from discord.ext.commands import Context, Bot
 from discord import Message
 
 
-class CACHORROARROMBADO(TextMischief):
-    mischief_name = "Xingar o cath fds"
+class THEHORSEAPPEARS(TextMischief):
+    mischief_name = "Xingar a cath fds"
     mischief_description = "Random chance (defined in settings) to send that fuckass dog gif to cath every time he sends a message"
 
     def __init__(self, bot):

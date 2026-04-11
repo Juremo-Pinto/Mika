@@ -54,6 +54,8 @@ class MischiefController(Cog):
         self.mischief_registry: Dict[str, BaseMischief] = _discover_mischiefs(bot)
     
     async def _add_cog_mischiefs(self):
+        if CogMischief not in self.mischief_registry:
+            return
         for name, item in self.mischief_registry[CogMischief].items():
             logger.info(f"Loaded mischief action {name} as cog")
             await self.bot.add_cog(item)

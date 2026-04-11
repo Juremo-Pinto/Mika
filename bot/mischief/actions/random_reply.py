@@ -16,14 +16,14 @@ class RandomReplyMischief(TextMischief):
         
         self.settings = Settings("random_reply", section="mischief")
         self.settings.setup(
-                min_amount = 500,
+                min_amount = 0,
                 max_amount = 5000,
                 
                 possible_texts = [
-                    "Diza",
-                    "Generally agreeable opinion",
-                    "I agree, --PING--",
-                    "I agree, DUMBASS"
+                    "Bars",
+                    "Wtf are you on abt",
+                    "Sure?, --PING--",
+                    "HATE, LET ME TELL YOU HOW MUCH I- \nnah jk lmao i luv you :D"
                 ]
             )
         
