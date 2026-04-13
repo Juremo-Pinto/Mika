@@ -22,7 +22,7 @@ class GeneralCommands(commands.Cog):
         await ctx.send("nuh uh")
             
     
-    @commands.command(name = "fala", aliases = ['falae'])
+    @commands.command(name = "fala", aliases = ['falar', 'diga'])
     async def sendMessage(self, ctx, *, message):
         await ctx.send(message)
         await ctx.message.delete()

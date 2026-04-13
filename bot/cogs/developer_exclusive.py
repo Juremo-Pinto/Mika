@@ -12,7 +12,7 @@ class DevOnlyCommands(commands.Cog):
     async def cog_load(self):
         logger.info(f"Cog Loaded: {self.__cog_name__}")
     
-    @commands.command(name = "APAGUE!!", aliases=["exploda", "#virepó", "desembrulhe-se"])
+    @commands.command(name = "APAGUE!!", aliases=["exploda", "dorme", "desembrulhe-se"])
     @developer()
     async def turn_off_bot(self, ctx: Context[Any]):
         await ctx.send(":[")
